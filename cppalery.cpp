@@ -2,7 +2,9 @@
 #include <string.h>
 #include <filesystem>
 #include <vector>
-#include <sstream>
+#include <algorithm>
+#include <iostream>
+#include <cstdlib>
 
 namespace fs = std::filesystem;
 /* 
@@ -14,7 +16,7 @@ options: [c] - bg-center
 		 [q] - quit
 		 [r] (or list explicitly) - set random
 */
-
+// TODO: sorting, scrolling
 enum termColors {
 	DefaultColor = 0,
 	DirColor = 1,
@@ -23,7 +25,26 @@ enum termColors {
 
 const double widthMultiplier = 0.99;
 const double heightMultiplier = 0.90;
+
 const std::string quitChar = "Q";
+const std::string centerChar = "c";
+const std::string fillChar = "f";
+
+const std::vector<std::string> imgExtensions = { ".jpg", ".webp", ".png", ".gif", ".jpeg" };
+const std::string fehCenter ="feh --bg-center ";
+const std::string fehFill = "feh --bg-fill ";
+
+void runFeh(std::string fileName, std::string mode = "f") {
+	std::string command;
+	if (mode == "f") {
+		command = fehFill + fileName;
+	}
+	else {
+		command = fehCenter + fileName;
+	}
+	
+	system(command.c_str());
+}
 
 void resizeWindow(WINDOW* window, int& maxH, int& maxW) {
    	getmaxyx(stdscr, maxH, maxW);
@@ -39,7 +60,7 @@ void refreshWindowSetup(WINDOW* window, int& maxH, int& maxW) {
 }
 
 std::vector<fs::directory_entry> getDirectoryContents(const std::string& path) {
-	std::vector<fs::directory_entry> res = {};
+	std::vector<fs::directory_entry> res;
 	for (const auto& entry : fs::directory_iterator(path)) {
 		res.push_back(entry);
 	}
@@ -60,22 +81,23 @@ int printDirectoryContents(WINDOW* win, const std::string& path, int selection, 
 	std::string filesStr = std::string(" Entries total: ").append(std::to_string(dirSize)).append(" ");
 
 	for(int i = 0; i < dirSize; i++) {
-		const char* entryStr = contents[i].path().filename().c_str();
+		const std::string entryStr = contents[i].path().filename();
+		const char* entryCStr = entryStr.c_str();
 
 		if(i == selection) {
 			wattron(win, COLOR_PAIR(termColors::SelectedColor));
-			mvwprintw(win, i + 1, 1, entryStr);
+			mvwprintw(win, i + 1, 1, entryCStr);
 			wattroff(win, COLOR_PAIR(termColors::SelectedColor));
 			continue;
 		}
 
 		if(contents[i].is_directory()) {
 			wattron(win, COLOR_PAIR(termColors::DirColor));
-			mvwprintw(win, i + 1, 1, entryStr);
+			mvwprintw(win, i + 1, 1, entryCStr);
 			wattroff(win, COLOR_PAIR(termColors::DirColor));
 		}
 		else {
-			mvwprintw(win, i + 1, 1, entryStr);
+			mvwprintw(win, i + 1, 1, entryCStr);
 		}
 	}
 
@@ -84,17 +106,15 @@ int printDirectoryContents(WINDOW* win, const std::string& path, int selection, 
 	return dirSize;
 }
 
-void loopOptions(WINDOW* win, int maxH, int maxW, char* workPath) {
-	std::string path = std::string(workPath);
-
+void loopOptions(WINDOW* win, int maxH, int maxW, fs::path workPath) {
 	// Selected directory entry
 	int selection = 0;
 	// Print initial state before user presses any key
-	int dirSize = printDirectoryContents(win, path, selection, maxH, maxW);
+	int dirSize = printDirectoryContents(win, workPath.string(), selection, maxH, maxW);
 
 	std::string str;
 	while (true) {
-		std::vector<fs::directory_entry> currentDirContents = getDirectoryContents(path);
+		std::vector<fs::directory_entry> currentDirContents = getDirectoryContents(workPath.string());
 		int ch = getch();
 
 		switch (ch) {
@@ -117,19 +137,33 @@ void loopOptions(WINDOW* win, int maxH, int maxW, char* workPath) {
 				break;
 			}
 			case KEY_LEFT: {
-				path = (fs::absolute(path).has_parent_path()) ? fs::absolute(path).parent_path().string() : path;
+				workPath = (fs::canonical(workPath).has_parent_path()) ? fs::canonical(workPath/"..") : workPath;
 				selection = 0;
 				refreshWindowSetup(win, maxH, maxW);
 				mvwprintw(win, maxH * heightMultiplier - 1, 1, "LEFT");
 				break;
 			}
 			case KEY_RIGHT: {
+				fs::path currentFilePath = currentDirContents[selection].path();
 				if(currentDirContents[selection].is_directory()) {
-					path = fs::absolute(currentDirContents[selection].path()).string();
+					workPath = fs::canonical(currentFilePath);
+					selection = 0;
 				}
-				selection = 0;
+				// Set background image
+				if(count(imgExtensions.begin(), imgExtensions.end(), currentFilePath.extension())) {
+					runFeh(currentFilePath.string());
+				}
 				refreshWindowSetup(win, maxH, maxW);
-				//mvwprintw(win, maxH * heightMultiplier - 4, maxW * widthMultiplier - 15, currentDirContents[selection].path().string().c_str());
+				mvwprintw(win, maxH * heightMultiplier - 1, 1, "RIGHT");
+				break;
+			}
+			// Doesn't work???
+			case KEY_ENTER: {
+				if(currentDirContents[selection].is_directory()) {
+					workPath = fs::canonical(currentDirContents[selection].path());
+					selection = 0;
+				}
+				refreshWindowSetup(win, maxH, maxW);
 				mvwprintw(win, maxH * heightMultiplier - 1, 1, "RIGHT");
 				break;
 			}
@@ -143,10 +177,19 @@ void loopOptions(WINDOW* win, int maxH, int maxW, char* workPath) {
 
 		str.push_back(ch);
 		if (str == quitChar) break;
+		if (str == centerChar) {
+			if(count(imgExtensions.begin(), imgExtensions.end(), currentDirContents[selection].path().extension())) {
+				runFeh(currentDirContents[selection].path().string(), "c");
+			}
+		}
+		if (str == fillChar) {
+			if(count(imgExtensions.begin(), imgExtensions.end(), currentDirContents[selection].path().extension())) {
+				runFeh(currentDirContents[selection].path().string(), "f");
+			}
+		}
 
-		dirSize = printDirectoryContents(win, path, selection, maxH, maxW);
+		dirSize = printDirectoryContents(win, workPath.string(), selection, maxH, maxW);
 
-		//mvwprintw(win, maxH * heightMultiplier - 2, maxW * widthMultiplier - 15, path.c_str());
 		wrefresh(win);
 		str = "";
 	}
@@ -156,6 +199,20 @@ int main (int argc, char** argv)
 {
 	if (argc < 2) {
 		printf("Argument not provided. Provide a directory path.\n");
+		return 1;
+	}
+
+	fs::path path;
+
+	try {
+		path = fs::canonical(argv[1]);
+	}
+	catch (const std::exception& ex) {
+		std::cerr << ex.what() << "\n";
+	}
+
+	if (!fs::exists(path)) {
+		printf("Provided path not valid.\n");
 		return 1;
 	}
 
@@ -179,7 +236,7 @@ int main (int argc, char** argv)
 	refreshWindowSetup(win, maxH, maxW);
 	wrefresh(win);
 
-	loopOptions(win, maxH, maxW, argv[1]);
+	loopOptions(win, maxH, maxW, path.string());
 
     endwin();
     return 0;
