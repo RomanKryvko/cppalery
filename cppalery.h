@@ -22,6 +22,7 @@ const double heightMultiplier = 0.90;
 
 // For some unknown reason, KEY_ENTER from ncurses lib doesn't work on my machine
 const int KEY_ENTER_CUSTOM = 10;
+const int KEY_BACKSPACE_ALT = 127;
 
 // Defines on which line from the egde scrolling starts
 const int scrollOffset = 2;
@@ -32,6 +33,7 @@ const std::string fillChar = "f";
 const std::string hideChar = "h";
 const std::string ascChar = "a";
 const std::string descChar = "d";
+const std::string searchChar = "/";
 
 const std::vector<std::string> imgExtensions = {".jpg", ".webp", ".png", ".gif", ".jpeg"};
 const std::string fehCenter = "feh --bg-center ";

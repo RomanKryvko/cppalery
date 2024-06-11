@@ -70,10 +70,36 @@ void scrollDown(int &ceiling, int &floor, int dirSize) {
 	}
 }
 
-void resetScrolling(int &ceiling, int &floor, fs::path path, int maxH, int dirSize) {
+void resetScrolling(int &ceiling, int &floor, int maxH, int dirSize) {
 	int maxDisplayedDirEntries = maxH * heightMultiplier - 2;
 	ceiling = 0;
 	floor = (dirSize < maxDisplayedDirEntries) ? dirSize : maxDisplayedDirEntries;
+}
+
+void focusScrolling(int &ceiling, int &floor, int selection, int maxH, int dirSize) {
+	int maxDisplayedDirEntries = maxH * heightMultiplier - 2;
+	int adjustedSelection = selection - scrollOffset;
+	ceiling = (adjustedSelection > 0) ? adjustedSelection : 0;
+	if (ceiling == 0) {
+		floor = (dirSize < maxDisplayedDirEntries) ? dirSize : maxDisplayedDirEntries;
+	}
+	else if (dirSize == ceiling + maxDisplayedDirEntries) {
+		floor = dirSize;
+	}
+	else if (dirSize < ceiling + maxDisplayedDirEntries) {
+		ceiling = dirSize - maxDisplayedDirEntries;
+		floor = dirSize;
+	}
+	else if (dirSize > ceiling + maxDisplayedDirEntries) {
+		floor = ceiling + maxDisplayedDirEntries;
+	}
+}
+
+bool inString(std::string haystack, std::string needle) {
+	std::transform(haystack.begin(), haystack.end(), haystack.begin(), ::tolower);
+	std::transform(needle.begin(), needle.end(), needle.begin(), ::tolower);
+
+	return haystack.find(needle) != std::string::npos;
 }
 
 void resetWindowSetup(WINDOW *window, int &maxH, int &maxW) {
@@ -93,6 +119,30 @@ std::vector<fs::directory_entry> getDirectoryContents(const std::string &path)
 		res.push_back(entry);
 	}
 	return res;
+}
+
+int findEntryInDirectory(std::vector<fs::directory_entry> contents, const std::string &str) {
+	char firstChar = std::tolower(str[0]);
+	int high = contents.size() - 1;
+	int low = 0;
+	formatDir(contents);
+	while (low <= high) {
+		int mid = low + (high - low) / 2;
+		std::string entryStr = contents[mid].path().filename().string();
+		char currentChar = std::tolower(entryStr[0]);
+		if (currentChar == firstChar) {
+			if (inString(entryStr, str)) {
+				return mid;
+			}
+		}
+		if (currentChar > firstChar) {
+			high = mid - 1;
+		}
+		else {
+			low = mid + 1;
+		}
+	}
+	return -1;
 }
 
 /**
@@ -173,7 +223,7 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 			case KEY_RESIZE: {
 				erase();
 				resetWindowSetup(win, maxH, maxW);
-				resetScrolling(ceiling, floor, workPath, maxH, currentDirContents.size());
+				resetScrolling(ceiling, floor, maxH, currentDirContents.size());
 				break;
 			}
 
@@ -198,11 +248,12 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 				currentDirContents = getDirectoryContents(workPath.string());
 				formatDir(currentDirContents, isOrderAscending, hideDotfiles);
 				selection = 0;
-				resetScrolling(ceiling, floor, workPath, maxH, currentDirContents.size());
+				resetScrolling(ceiling, floor, maxH, currentDirContents.size());
 				break;
 			}
 
 			case KEY_ENTER_CUSTOM:
+			case KEY_ENTER:
 			case KEY_RIGHT: {
 				fs::path currentFilePath = currentDirContents[selection].path();
 				if (currentDirContents[selection].is_directory()) {
@@ -211,7 +262,7 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 					formatDir(currentDirContents, isOrderAscending, hideDotfiles);
 					selection = 0;
 				}
-				resetScrolling(ceiling, floor, workPath, maxH, currentDirContents.size());
+				resetScrolling(ceiling, floor, maxH, currentDirContents.size());
 				// Set background image
 				if (count(imgExtensions.begin(), imgExtensions.end(), currentFilePath.extension())) {
 					runFeh(currentFilePath.string());
@@ -248,6 +299,44 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 		}
 		if (str == descChar) {
 			isOrderAscending = false;
+		}
+		if (str == searchChar) {
+			mvwprintw(win, maxH * heightMultiplier - 1, 1, "/");
+			wrefresh(win);
+			str = "";
+			int ch = getch();
+			mvwprintw(win, maxH * heightMultiplier - 1, 1, str.c_str());
+			wrefresh(win);
+			while(ch != KEY_ENTER_CUSTOM) {
+				switch (ch) {
+					case KEY_DC:
+					case '\b':
+					case KEY_BACKSPACE:
+					case KEY_BACKSPACE_ALT: {
+						if (str.empty()) {
+							break;
+						}
+						else {
+							str.pop_back();
+						}
+						break;
+					}
+					default: {
+						str.push_back(ch);
+						break;
+					}
+				}
+				box(win, 0, 0);
+				mvwprintw(win, maxH * heightMultiplier - 1, 1, str.c_str());
+				wrefresh(win);
+				ch = getch();
+			}
+			int foundIdx = findEntryInDirectory(currentDirContents, str);
+			if (foundIdx >= 0) {
+				selection = foundIdx;
+				focusScrolling(ceiling, floor, selection, maxH, dirSize);
+				wrefresh(win);
+			}
 		}
 
 		dirName = workPath.string();
