@@ -41,6 +41,7 @@ void formatDir(std::vector<fs::directory_entry> &dirContents, bool nameAsc = tru
 			std::string fileName = it->path().filename().string();
 			if (fileName[0] == '.') {
 				it = dirContents.erase(it);
+			// TODO: figure out why the program fails here
 			} else {
 				++it;
 			}
@@ -71,13 +72,13 @@ void scrollDown(int &ceiling, int &floor, int dirSize) {
 }
 
 void resetScrolling(int &ceiling, int &floor, int maxH, int dirSize) {
-	int maxDisplayedDirEntries = maxH * heightMultiplier - 2;
+	int maxDisplayedDirEntries = maxH - 2;
 	ceiling = 0;
 	floor = (dirSize < maxDisplayedDirEntries) ? dirSize : maxDisplayedDirEntries;
 }
 
 void focusScrolling(int &ceiling, int &floor, int selection, int maxH, int dirSize) {
-	int maxDisplayedDirEntries = maxH * heightMultiplier - 2;
+	int maxDisplayedDirEntries = maxH - 2;
 	int adjustedSelection = selection - scrollOffset;
 	ceiling = (adjustedSelection > 0) ? adjustedSelection : 0;
 	if (ceiling == 0) {
@@ -102,20 +103,24 @@ bool inString(std::string haystack, std::string needle) {
 	return haystack.find(needle) != std::string::npos;
 }
 
-void resetWindowSetup(WINDOW *window, int &maxH, int &maxW) {
+void resetMainWinSetup (WINDOW *window, int &maxH, int &maxW) {
 	werase(window);
 	getmaxyx(stdscr, maxH, maxW);
-	wresize(window, maxH * heightMultiplier, maxW * widthMultiplier);
+	wresize(window, maxH - bottomOffset, maxW - 1);
 	box(window, 0, 0);
 	mvwprintw(window, 0, 5, " CPPalery ");
 	refresh();
 }
 
+void resetWinSetup (WINDOW *window) {
+	werase(window);
+	wrefresh(window);
+}
+
 std::vector<fs::directory_entry> getDirectoryContents(const std::string &path)
 {
 	std::vector<fs::directory_entry> res;
-	for (const auto &entry : fs::directory_iterator(path))
-	{
+	for (const auto &entry : fs::directory_iterator(path)) {
 		res.push_back(entry);
 	}
 	return res;
@@ -148,7 +153,7 @@ int findEntryInDirectory(std::vector<fs::directory_entry> contents, const std::s
 /**
  * @brief Renders directory contents and a selected file. Returns number of entries in the directory.
  *
- * @param win pointer to the window
+ * @param mainWin pointer to the window
  * @param contents vector with all the directories' entries
  * @param selection selected directory entry
  * @param maxH max number of rows in the window
@@ -157,46 +162,46 @@ int findEntryInDirectory(std::vector<fs::directory_entry> contents, const std::s
  * @param floor index of the lowest directory entry to be listed
  * @return int number of files and subdirectories in directory
  */
-int printDirectoryContents(WINDOW *win, const std::vector<fs::directory_entry> &contents, std::string dirName, int selection, int maxH, int maxW, int ceiling, int floor) {
-	resetWindowSetup(win, maxH, maxW);
+int printDirectoryContents(WINDOW *mainWin, const std::vector<fs::directory_entry> &contents, std::string dirName, int selection, int maxH, int maxW, int ceiling, int floor) {
+	resetMainWinSetup(mainWin, maxH, maxW);
 	int dirSize = contents.size();
 
 	std::string filesStr = std::string(" Entries total: ").append(std::to_string(dirSize)).append(" ");
-	mvwprintw(win, maxH * heightMultiplier - 1, maxW * widthMultiplier - strlen(filesStr.c_str()) - 2, filesStr.c_str());
+	mvwprintw(mainWin, maxH - bottomOffset - 1, maxW - strlen(filesStr.c_str()) - 2, filesStr.c_str());
 
-	mvwprintw(win, 0, 20, dirName.c_str());
+	mvwprintw(mainWin, 0, 20, dirName.c_str());
 
 	if (selection == 0) {
-		mvwprintw(win, maxH * heightMultiplier - 1, 1, "TOP");
+		mvwprintw(mainWin, maxH - bottomOffset - 1, 1, "TOP");
 	}
 	if (selection == dirSize - 1) {
-		mvwprintw(win, maxH * heightMultiplier - 1, 1, "BOT");
+		mvwprintw(mainWin, maxH - bottomOffset - 1, 1, "BOT");
 	}
 
-	for (int i = ceiling, j = 0; i < floor; i++, j++) {
+	for (int i = ceiling, j = 1; i < floor; i++, j++) {
 		const std::string entryStr = contents[i].path().filename();
 		const char *entryCStr = entryStr.c_str();
 
 		if (i == selection) {
-			wattron(win, COLOR_PAIR(termColors::SelectedColor));
-			mvwprintw(win, j + 1, 1, entryCStr);
-			wattroff(win, COLOR_PAIR(termColors::SelectedColor));
+			wattron(mainWin, COLOR_PAIR(termColors::SelectedColor));
+			mvwprintw(mainWin, j, 1, entryCStr);
+			wattroff(mainWin, COLOR_PAIR(termColors::SelectedColor));
 		}
 		else if (contents[i].is_directory()) {
-			wattron(win, COLOR_PAIR(termColors::DirColor));
-			mvwprintw(win, j + 1, 1, entryCStr);
-			wattroff(win, COLOR_PAIR(termColors::DirColor));
+			wattron(mainWin, COLOR_PAIR(termColors::DirColor));
+			mvwprintw(mainWin, j, 1, entryCStr);
+			wattroff(mainWin, COLOR_PAIR(termColors::DirColor));
 		}
 		else {
-			mvwprintw(win, j + 1, 1, entryCStr);
+			mvwprintw(mainWin, j, 1, entryCStr);
 		}
 	}
 
-	wrefresh(win);
+	wrefresh(mainWin);
 	return dirSize;
 }
 
-void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
+void loopOptions(WINDOW *mainWin, WINDOW *commandWin, int maxH, int maxW, fs::path workPath) {
 	// Selected directory entry
 	int selection = 0;
 	// Highest entry to be displayed
@@ -207,12 +212,12 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 	formatDir(currentDirContents, isOrderAscending, hideDotfiles);
 	int dirSize = currentDirContents.size();
 	// Substract 2 for window borders
-	int maxDisplayedDirEntries = maxH * heightMultiplier - 2;
+	int maxDisplayedDirEntries = maxH - bottomOffset - 2;
 	// Lowest entry to be displayed
 	int floor = (dirSize < maxDisplayedDirEntries) ? dirSize : maxDisplayedDirEntries;
 	std::string dirName = workPath.string();
 	// Print initial state before user presses any key
-	dirSize = printDirectoryContents(win, currentDirContents, dirName, selection, maxH, maxW, ceiling, floor);
+	dirSize = printDirectoryContents(mainWin, currentDirContents, dirName, selection, maxH, maxW, ceiling, floor);
 	std::string str;
 	while (true) {
 		currentDirContents = getDirectoryContents(workPath.string());
@@ -222,8 +227,10 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 		switch (ch) {
 			case KEY_RESIZE: {
 				erase();
-				resetWindowSetup(win, maxH, maxW);
-				resetScrolling(ceiling, floor, maxH, currentDirContents.size());
+				resetMainWinSetup(mainWin, maxH, maxW);
+				// for some reason I coudn't get the mvwin to work
+				commandWin = newwin(1, maxW, maxH - bottomOffset + 1, 1);
+				focusScrolling(ceiling, floor, selection, maxH - bottomOffset, dirSize);
 				break;
 			}
 
@@ -237,7 +244,7 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 
 			case KEY_DOWN: {
 				selection = (selection < dirSize - 1) ? selection + 1 : selection;
-				if (selection > floor - scrollOffset) {
+				if (selection >= floor - scrollOffset) {
 					scrollDown(ceiling, floor, dirSize);
 				}
 				break;
@@ -248,11 +255,11 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 				currentDirContents = getDirectoryContents(workPath.string());
 				formatDir(currentDirContents, isOrderAscending, hideDotfiles);
 				selection = 0;
-				resetScrolling(ceiling, floor, maxH, currentDirContents.size());
+				resetScrolling(ceiling, floor, maxH - bottomOffset, currentDirContents.size());
 				break;
 			}
 
-			case KEY_ENTER_CUSTOM:
+			case KEY_ENTER_ALT:
 			case KEY_ENTER:
 			case KEY_RIGHT: {
 				fs::path currentFilePath = currentDirContents[selection].path();
@@ -262,7 +269,7 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 					formatDir(currentDirContents, isOrderAscending, hideDotfiles);
 					selection = 0;
 				}
-				resetScrolling(ceiling, floor, maxH, currentDirContents.size());
+				resetScrolling(ceiling, floor, maxH - bottomOffset, currentDirContents.size());
 				// Set background image
 				if (count(imgExtensions.begin(), imgExtensions.end(), currentFilePath.extension())) {
 					runFeh(currentFilePath.string());
@@ -301,56 +308,66 @@ void loopOptions(WINDOW *win, int maxH, int maxW, fs::path workPath) {
 			isOrderAscending = false;
 		}
 		if (str == searchChar) {
-			mvwprintw(win, maxH * heightMultiplier - 1, 1, "/");
-			wrefresh(win);
+			resetWinSetup(commandWin);
+			mvwprintw(commandWin, 0, 1, "/");
+			wrefresh(commandWin);
 			str = "";
 			int ch = getch();
-			mvwprintw(win, maxH * heightMultiplier - 1, 1, str.c_str());
-			wrefresh(win);
-			while(ch != KEY_ENTER_CUSTOM) {
-				switch (ch) {
-					case KEY_DC:
-					case '\b':
-					case KEY_BACKSPACE:
-					case KEY_BACKSPACE_ALT: {
-						if (str.empty()) {
-							break;
-						}
-						else {
-							str.pop_back();
-						}
+			mvwprintw(commandWin, 0, 2, str.c_str());
+			wrefresh(commandWin);
+			refresh();
+			while(ch != KEY_ENTER_ALT && ch != KEY_ENTER) {
+				if (ch == KEY_DC || ch == '\b' || ch == KEY_BACKSPACE || ch == KEY_BACKSPACE_ALT) {
+					if (str.empty()) {
 						break;
 					}
-					default: {
-						str.push_back(ch);
-						break;
+					else {
+						str.pop_back();
 					}
 				}
-				box(win, 0, 0);
-				mvwprintw(win, maxH * heightMultiplier - 1, 1, str.c_str());
-				wrefresh(win);
+				else if (ch == KEY_ESC) {
+					break;
+				}
+				else {
+					str.push_back(ch);
+				}
+				werase(commandWin);
+				mvwprintw(commandWin, 0, 1, "/");
+				mvwprintw(commandWin, 0, 2, str.c_str());
+				wrefresh(commandWin);
 				ch = getch();
 			}
 			int foundIdx = findEntryInDirectory(currentDirContents, str);
 			if (foundIdx >= 0) {
+				resetWinSetup(commandWin);
 				selection = foundIdx;
-				focusScrolling(ceiling, floor, selection, maxH, dirSize);
-				wrefresh(win);
+				focusScrolling(ceiling, floor, selection, maxH - bottomOffset, dirSize);
+				mvwprintw(commandWin, 0, 1, currentDirContents[selection].path().filename().string().c_str());
+				wrefresh(commandWin);
+				wrefresh(mainWin);
+			}
+			else {
+				std::string notFoundStr = "Pattern not found: ";
+				notFoundStr.append(str);
+				mvwprintw(commandWin, 0, 1, notFoundStr.c_str());
+				wrefresh(commandWin);
 			}
 		}
 
 		dirName = workPath.string();
 		formatDir(currentDirContents, isOrderAscending, hideDotfiles);
-		dirSize = printDirectoryContents(win, currentDirContents, dirName, selection, maxH, maxW, ceiling, floor);
+		dirSize = printDirectoryContents(mainWin, currentDirContents, dirName, selection, maxH, maxW, ceiling, floor);
 		int floor = (dirSize < maxDisplayedDirEntries) ? dirSize : maxDisplayedDirEntries;
 
-		wrefresh(win);
+		wrefresh(mainWin);
 		str = "";
 	}
 }
 
 int main(int argc, char **argv)
 {
+	setlocale(LC_ALL, "");
+
 	if (argc < 2)
 	{
 		printf("Argument not provided. Provide a directory path.\n");
@@ -388,14 +405,18 @@ int main(int argc, char **argv)
 	int maxH, maxW;
 	getmaxyx(stdscr, maxH, maxW);
 
-	WINDOW *win = newwin(maxH * heightMultiplier, maxW * widthMultiplier, 1, 1);
+	WINDOW *mainWin = newwin(maxH, maxW, 1, 1);
+	WINDOW *commandWin = newwin(1, maxW, maxH - bottomOffset + 1, 1);
+	wrefresh(commandWin);
+
+	resetMainWinSetup(mainWin, maxH, maxW);
+	wrefresh(mainWin);
 	refresh();
 
-	resetWindowSetup(win, maxH, maxW);
-	wrefresh(win);
+	loopOptions(mainWin, commandWin, maxH, maxW, path.string());
 
-	loopOptions(win, maxH, maxW, path.string());
-
+	delwin(mainWin);
+	delwin(commandWin);
 	endwin();
 	return 0;
 }

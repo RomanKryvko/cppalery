@@ -17,13 +17,12 @@ enum termColors
 	SelectedColor = 2
 };
 
-const double widthMultiplier = 0.99;
-const double heightMultiplier = 0.90;
+const int bottomOffset = 4;
 
 // For some unknown reason, KEY_ENTER from ncurses lib doesn't work on my machine
-const int KEY_ENTER_CUSTOM = 10;
+const int KEY_ENTER_ALT = 10;
 const int KEY_BACKSPACE_ALT = 127;
-
+const int KEY_ESC = 27;
 // Defines on which line from the egde scrolling starts
 const int scrollOffset = 2;
 
