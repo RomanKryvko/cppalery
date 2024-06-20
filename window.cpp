@@ -11,5 +11,6 @@ Window::~Window() {
 void Window::resize(int height, int width) {
     this->height = height;
     this->width = width;
+    wresize(window, height, width);
     resetSetup();
 }

@@ -23,13 +23,6 @@ class CommandWindow : Window {
             wrefresh(this->window);
         }
 
-        void resize(int newHeight, int newWidth) {
-            this->height = newHeight;
-            this->width = newWidth;
-            wresize(window, newHeight, newWidth);
-            resetSetup();
-        }
-
         void move(int newHeigth, int newWidth, int startX, int startY) {
             // for some reason I coudn't get the mvwin to work
             delwin(this->window);

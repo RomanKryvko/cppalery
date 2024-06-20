@@ -13,7 +13,7 @@ class Window {
 
         virtual void resetSetup() = 0;
 
-        void resize(int height, int width);
+        virtual void resize(int newHeight, int newWidth);
 };
 
 #endif

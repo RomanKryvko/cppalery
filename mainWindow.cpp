@@ -77,13 +77,6 @@ class MainWindow : public Window {
             wrefresh(this->window);
         }
 
-        void resize(int newHeight, int newWidth) {
-            this->height = newHeight;
-            this->width = newWidth;
-            wresize(window, newHeight, newWidth);
-            resetSetup();
-        }
-
         bool goUpDirectory() {
             if (directory.goUpDirectory()) {
                 focusScrolling();
