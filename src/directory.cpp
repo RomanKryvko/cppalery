@@ -1,4 +1,3 @@
-#include "cppalery.h"
 #include "directory.h"
 
 void Directory::setupDirectory(const std::string &workPath) {

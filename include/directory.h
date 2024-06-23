@@ -1,7 +1,14 @@
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
 
-#include "cppalery.h"
+#include <vector>
+#include <filesystem>
+#include <string>
+#include <algorithm>
+
+namespace fs = std::filesystem;
+
+const std::vector<std::string> imgExtensions = {".jpg", ".webp", ".png", ".gif", ".jpeg"};
 
 class Directory {
     private:

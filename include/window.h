@@ -1,6 +1,6 @@
 #ifndef WINDOW_H
 #define WINDOW_H
-#include "cppalery.h"
+#include <ncurses.h>
 
 class Window {
     public:

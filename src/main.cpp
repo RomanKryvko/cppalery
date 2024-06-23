@@ -1,4 +1,5 @@
-#include "form.cpp"
+#include <iostream>
+#include "form.h"
 
 int main (int argc, char** argv) {
     setlocale(LC_ALL, "");
