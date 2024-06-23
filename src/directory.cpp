@@ -7,7 +7,6 @@ void Directory::setupDirectory(const std::string &workPath) {
     this->formatDir();
 }
 
-
 bool Directory::inString(std::string haystack, std::string needle) {
     std::transform(haystack.begin(), haystack.end(), haystack.begin(), ::tolower);
     std::transform(needle.begin(), needle.end(), needle.begin(), ::tolower);
@@ -37,6 +36,10 @@ bool Directory::isSelectionAnImage() {
     return count(imgExtensions.begin(), imgExtensions.end(), this->contents[selection].path().extension());
 }
 
+bool Directory::isAnImage(int idx) {
+    return count(imgExtensions.begin(), imgExtensions.end(), this->contents[idx].path().extension());
+}
+
 int Directory::findIdxOfEntry(const fs::path &path) {
     for(int i = 0; i < this->size() - 1; i++) {
         if (this->contents[i].path() == path) {
@@ -47,9 +50,10 @@ int Directory::findIdxOfEntry(const fs::path &path) {
 }
 
 bool Directory::goUpDirectory() {
+    fs::path directoryOfEntry = this->workPath;
     if (this->workPath.has_parent_path()) {
         this->setupDirectory(fs::canonical(this->workPath / ".."));
-        int foundParentIdx = this->findIdxOfEntry(this->directoryOfEntry);
+        int foundParentIdx = this->findIdxOfEntry(directoryOfEntry);
         if (foundParentIdx > 0) {
             this->selection = foundParentIdx;
         }
@@ -62,12 +66,13 @@ bool Directory::goUpDirectory() {
 }
 
 bool Directory::goIntoDirectory() {
-    fs::directory_entry currentEntry = this->contents[this->selection];
-    if (currentEntry.is_directory()) {
-        this->directoryOfEntry = currentEntry.path();
-        this->setupDirectory(fs::canonical(currentEntry.path()));
-        this->selection = 0;
-        return true;
+    if (this->size() > 0) {
+        fs::directory_entry currentEntry = this->contents[this->selection];
+        if (currentEntry.is_directory()) {
+            this->setupDirectory(fs::canonical(currentEntry.path()));
+            this->selection = 0;
+            return true;
+        }
     }
     return false;
 }

@@ -8,9 +8,6 @@ PreviewWindow::PreviewWindow(int height, int width, int startY, int startX) {
 }
 
 PreviewWindow::~PreviewWindow() {
-    if (this->window != nullptr) {
-        delwin(this->window);
-    }
     if (this->isUeberzugRunning) {
         this->terminateImgPreview();
     }

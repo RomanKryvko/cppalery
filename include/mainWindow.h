@@ -7,9 +7,12 @@
 
 enum TermColors
 {
-	DefaultColor = 0,
-	DirColor = 1,
-	SelectedColor = 2
+    DefaultColor = 0,
+    DirColor = 1,
+    SelectedColor = 2,
+    ImageColor = 3,
+    SelectedDirColor = 4,
+    EmptyColor = 5
 };
 
 // Defines on which line from the egde scrolling starts
@@ -30,6 +33,8 @@ class MainWindow : public Window {
 
         Directory getDirectory();
 
+        int getDirSize();
+
         void scrollUp();
 
         void scrollDown();
@@ -41,6 +46,8 @@ class MainWindow : public Window {
         bool goUpDirectory();
 
         bool goIntoDirectory();
+
+        void jumpToEntry(int idx);
 
         bool isSelectionAnImage();
 

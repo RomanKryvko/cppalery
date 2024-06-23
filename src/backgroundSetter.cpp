@@ -11,10 +11,10 @@ BackgroundSetter::BackgroundSetter(BackgroundSetter::Mode mode){
 void BackgroundSetter::setBackground(const std::string &fileName) {
     std::string command;
     if (mode == Mode::FILL) {
-        command = fehFill + fileName;
+        command = fehFill + '\"' + fileName + '\"';
     }
     else {
-        command = fehCenter + fileName;
+        command = fehCenter + '\"' + fileName + '\"';
     }
 
     system(command.c_str());

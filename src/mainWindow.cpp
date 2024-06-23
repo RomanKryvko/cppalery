@@ -23,6 +23,10 @@ Directory MainWindow::getDirectory() {
     return this->directory;
 }
 
+int MainWindow::getDirSize() {
+    return this->directory.size();
+}
+
 void MainWindow::scrollUp() {
     int selection = directory.selection;
     if (selection > 0) {
@@ -69,6 +73,11 @@ void MainWindow::resetSetup() {
     wrefresh(this->window);
 }
 
+void MainWindow::jumpToEntry(int idx) {
+    directory.selection = idx;
+    focusScrolling();
+}
+
 bool MainWindow::goUpDirectory() {
     if (directory.goUpDirectory()) {
         focusScrolling();
@@ -112,19 +121,39 @@ void MainWindow::printDirectoryContents() {
         mvwprintw(this->window, height - 1, 1, "BOT");
     }
 
+    if (dirSize == 0) {
+        wattron(this->window, COLOR_PAIR(TermColors::EmptyColor));
+        mvwprintw(this->window, 1, 1, "Empty");
+        wattroff(this->window, COLOR_PAIR(TermColors::EmptyColor));
+        wrefresh(this->window);
+        return;
+    }
+
     for (int i = ceiling, j = 1; i < floor; i++, j++) {
         const std::string entryStr = this->directory.contents[i].path().filename();
         const char *entryCStr = entryStr.c_str();
 
         if (i == selection) {
-            wattron(this->window, COLOR_PAIR(TermColors::SelectedColor));
-            mvwprintw(this->window, j, 1, entryCStr);
-            wattroff(this->window, COLOR_PAIR(TermColors::SelectedColor));
+            if (this->directory.contents[selection].is_directory()) {
+                wattron(this->window, COLOR_PAIR(TermColors::SelectedDirColor));
+                mvwprintw(this->window, j, 1, entryCStr);
+                wattroff(this->window, COLOR_PAIR(TermColors::SelectedDirColor));
+            }
+            else {
+                wattron(this->window, COLOR_PAIR(TermColors::SelectedColor));
+                mvwprintw(this->window, j, 1, entryCStr);
+                wattroff(this->window, COLOR_PAIR(TermColors::SelectedColor));
+            }
         }
         else if (this->directory.contents[i].is_directory()) {
             wattron(this->window, COLOR_PAIR(TermColors::DirColor));
             mvwprintw(this->window, j, 1, entryCStr);
             wattroff(this->window, COLOR_PAIR(TermColors::DirColor));
+        }
+        else if (this->directory.isAnImage(i)) {
+            wattron(this->window, COLOR_PAIR(TermColors::ImageColor));
+            mvwprintw(this->window, j, 1, entryCStr);
+            wattroff(this->window, COLOR_PAIR(TermColors::ImageColor));
         }
         else {
             mvwprintw(this->window, j, 1, entryCStr);
@@ -158,8 +187,7 @@ void MainWindow::chooseNextFoundEntry() {
         else {
             directory.chosenFoundEntryIdx++;
         }
-        directory.selection = directory.foundEntries[directory.chosenFoundEntryIdx];
-        focusScrolling();
+        jumpToEntry(directory.foundEntries[directory.chosenFoundEntryIdx]);
     }
 }
 
@@ -171,7 +199,6 @@ std::string MainWindow::findEntryInDirectory(const std::string &str) {
         return res;
     }
     int firstFoundEntry = directory.foundEntries[0];
-    directory.selection = firstFoundEntry;
-    focusScrolling();
+    jumpToEntry(firstFoundEntry);
     return directory.contents[firstFoundEntry].path().filename().string();
 }

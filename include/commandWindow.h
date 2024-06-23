@@ -6,7 +6,7 @@
 #include "keyGlobals.h"
 #include <string>
 
-class CommandWindow : Window {
+class CommandWindow : public Window {
     public:
         CommandWindow();
         CommandWindow(int height, int width, int startX, int startY);

@@ -13,7 +13,6 @@ const std::vector<std::string> imgExtensions = {".jpg", ".webp", ".png", ".gif",
 class Directory {
     private:
         int dirSize;
-        fs::path directoryOfEntry;
 
         void setupDirectory(const std::string &workPath);
 
@@ -56,6 +55,8 @@ class Directory {
         int size();
 
         bool isSelectionAnImage();
+
+        bool isAnImage(int idx);
 
         bool goUpDirectory();
 

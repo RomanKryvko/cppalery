@@ -3,9 +3,12 @@
 Form::Form(const std::string &workPath) {
     initscr();
     start_color();
+    use_default_colors();
     init_pair(TermColors::DirColor, COLOR_WHITE, COLOR_BLUE);
     init_pair(TermColors::SelectedColor, COLOR_BLACK, COLOR_WHITE);
-    use_default_colors();
+    init_pair(TermColors::ImageColor, COLOR_YELLOW, -1);
+    init_pair(TermColors::SelectedDirColor, COLOR_BLUE, COLOR_WHITE);
+    init_pair(TermColors::EmptyColor, COLOR_WHITE, COLOR_RED);
     noecho();
     cbreak();
     intrflush(stdscr, FALSE);
@@ -62,21 +65,40 @@ void Form::loopOptions() {
             break;
 
         switch (ch) {
+            case KEY_MOVE_TOP: {
+                ch = getch();
+                if (ch == KEY_MOVE_TOP && mainWin.getDirSize() > 0) {
+                    mainWin.jumpToEntry(0);
+                }
+                break;
+            }
+
+            case KEY_MOVE_BOTTOM: {
+                int dirSize = mainWin.getDirSize();
+                if (dirSize > 0) {
+                    mainWin.jumpToEntry(dirSize - 1);
+                }
+                break;
+            }
+
             case KEY_RESIZE: {
                 this->resize();
                 break;
             }
 
+            case KEY_UP_ALT:
             case KEY_UP: {
                 mainWin.scrollUp();
                 break;
             }
 
+            case KEY_DOWN_ALT:
             case KEY_DOWN: {
                 mainWin.scrollDown();
                 break;
             }
 
+            case KEY_LEFT_ALT:
             case KEY_LEFT: {
                 if (mainWin.goUpDirectory()) {
                     this->workPath = mainWin.getDirectory().workPath;
@@ -84,6 +106,7 @@ void Form::loopOptions() {
                 break;
             }
 
+            case KEY_RIGHT_ALT:
             case KEY_ENTER_ALT:
             case KEY_ENTER:
             case KEY_RIGHT: {
