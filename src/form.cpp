@@ -159,7 +159,8 @@ void Form::loopOptions() {
             }
 
             case LOOP_RESULTS_CHAR: {
-                mainWin.chooseNextFoundEntry();
+                std::string searchResult = mainWin.chooseNextFoundEntry();
+                commandWin.printText(searchResult);
                 break;
             }
 

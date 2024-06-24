@@ -59,7 +59,7 @@ class MainWindow : public Window {
 
         void sortContentsByName(bool ascending = true);
 
-        void chooseNextFoundEntry();
+        std::string chooseNextFoundEntry();
 
         std::string findEntryInDirectory(const std::string &str);
 

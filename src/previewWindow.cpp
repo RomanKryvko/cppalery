@@ -21,7 +21,6 @@ void PreviewWindow::initialize(int height, int width, int startY, int startX) {
 
 void PreviewWindow::resetSetup() {
     werase(this->window);
-    box(this->window, 0, 0);
     wrefresh(this->window);
 }
 

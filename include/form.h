@@ -1,9 +1,6 @@
 #ifndef FORM_H
 #define FORM_H
 
-#include <ncurses.h>
-#include <filesystem>
-#include <chrono>
 #include "keyGlobals.h"
 #include "directory.h"
 #include "mainWindow.h"

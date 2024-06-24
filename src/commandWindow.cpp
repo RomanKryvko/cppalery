@@ -16,7 +16,6 @@ void CommandWindow::initialize(int height, int width, int startX, int startY) {
 
 void CommandWindow::resetSetup() {
     werase(this->window);
-    wrefresh(this->window);
 }
 
 void CommandWindow::move(int newHeigth, int newWidth, int startX, int startY) {

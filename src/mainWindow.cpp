@@ -70,7 +70,6 @@ void MainWindow::resetSetup() {
     werase(this->window);
     box(this->window, 0, 0);
     mvwprintw(this->window, 0, 5, " CPPalery ");
-    wrefresh(this->window);
 }
 
 void MainWindow::jumpToEntry(int idx) {
@@ -177,18 +176,21 @@ void MainWindow::sortContentsByName(bool ascending) {
     directory.formatDir();
 }
 
-void MainWindow::chooseNextFoundEntry() {
+std::string MainWindow::chooseNextFoundEntry() {
     int currentIdx = directory.chosenFoundEntryIdx;
+    std::string res = "";
     if (currentIdx >= 0) {
         if (currentIdx == directory.foundEntries.size() - 1) {
-            //TODO: output "Search hit BOTTOM, starting from TOP message"
             directory.chosenFoundEntryIdx = 0;
+            res = "Search hit BOTTOM, starting from TOP";
         }
         else {
             directory.chosenFoundEntryIdx++;
+            res = directory.contents[directory.foundEntries[directory.chosenFoundEntryIdx]].path().filename().string();
         }
         jumpToEntry(directory.foundEntries[directory.chosenFoundEntryIdx]);
     }
+    return res;
 }
 
 std::string MainWindow::findEntryInDirectory(const std::string &str) {
@@ -200,5 +202,6 @@ std::string MainWindow::findEntryInDirectory(const std::string &str) {
     }
     int firstFoundEntry = directory.foundEntries[0];
     jumpToEntry(firstFoundEntry);
-    return directory.contents[firstFoundEntry].path().filename().string();
+    std::string res = str + ": " + std::to_string(directory.foundEntries.size()) + " matches";
+    return res;
 }
