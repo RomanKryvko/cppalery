@@ -8,6 +8,7 @@ const int KEY_ESC = 27;
 
 const int QUIT_CHAR = 'Q';
 const int CENTER_CHAR = 'c';
+const int RANDOM_CHAR = 'r';
 const int FILL_CHAR = 'f';
 const int HIDE_CHAR = 'H';
 const int ASC_CHAR = 'a';

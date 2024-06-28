@@ -24,9 +24,16 @@ void CommandWindow::move(int newHeigth, int newWidth, int startX, int startY) {
     this->window = newwin(newHeigth, newWidth, startX, startY);
 }
 
-void CommandWindow::printText(std::string str) {
+void CommandWindow::printStatus(int position, int total) {
     resetSetup();
-    mvwprintw(this->window, 0, 1, str.c_str());
+    mvwprintw(this->window, 0, 1, this->info.c_str());
+    if (total != 0) {
+        int percent = position * 100 / total;
+        std::ostringstream oss;
+        oss << position << "/" << total << std::setw(5) << percent << "%%";
+        std::string posString = oss.str();
+        mvwprintw(this->window, 0, this->width - posString.length(), posString.c_str());
+    }
     wrefresh(this->window);
 }
 

@@ -5,6 +5,8 @@ void Directory::setupDirectory(const std::string &workPath) {
     this->directoryName = this->workPath;
     this->refreshDirectoryContents();
     this->formatDir();
+    this->chosenFoundEntryIdx = -1;
+    this->foundEntries.clear();
 }
 
 bool Directory::inString(std::string haystack, std::string needle) {
@@ -33,7 +35,10 @@ int Directory::size() {
 }
 
 bool Directory::isSelectionAnImage() {
-    return count(imgExtensions.begin(), imgExtensions.end(), this->contents[selection].path().extension());
+    if (this->dirSize > 0) {
+        return count(imgExtensions.begin(), imgExtensions.end(), this->contents[selection].path().extension());
+    }
+    return false;
 }
 
 bool Directory::isAnImage(int idx) {
@@ -110,6 +115,16 @@ void Directory::formatDir() {
             this->selection = this->dirSize - 1;
         }
     }
+}
+
+std::vector<fs::path> Directory::getAllImages() {
+    std::vector<fs::path> images;
+    for (const auto &entry : fs::directory_iterator(workPath)) {
+        if (count(imgExtensions.begin(), imgExtensions.end(), entry.path().extension())) {
+            images.push_back(entry.path());
+        }
+    }
+    return images;
 }
 
 void Directory::findAllEntriesInDirectory(const std::string &str) {

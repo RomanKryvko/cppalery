@@ -66,6 +66,8 @@ class Directory {
 
         void formatDir();
 
+        std::vector<fs::path> getAllImages();
+
         int findIdxOfEntry(const fs::path &path);
 
         void findAllEntriesInDirectory(const std::string &str);

@@ -33,6 +33,8 @@ class MainWindow : public Window {
 
         Directory getDirectory();
 
+        int getDirPosition();
+
         int getDirSize();
 
         void scrollUp();
@@ -58,6 +60,8 @@ class MainWindow : public Window {
         void toggleDots();
 
         void sortContentsByName(bool ascending = true);
+
+        std::vector<fs::path> getAllImages();
 
         std::string chooseNextFoundEntry();
 

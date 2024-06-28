@@ -27,6 +27,10 @@ int MainWindow::getDirSize() {
     return this->directory.size();
 }
 
+int MainWindow::getDirPosition() {
+    return this->directory.selection;
+}
+
 void MainWindow::scrollUp() {
     int selection = directory.selection;
     if (selection > 0) {
@@ -176,6 +180,10 @@ void MainWindow::sortContentsByName(bool ascending) {
     directory.formatDir();
 }
 
+std::vector<fs::path> MainWindow::getAllImages() {
+    return directory.getAllImages();
+}
+
 std::string MainWindow::chooseNextFoundEntry() {
     int currentIdx = directory.chosenFoundEntryIdx;
     std::string res = "";
@@ -202,6 +210,13 @@ std::string MainWindow::findEntryInDirectory(const std::string &str) {
     }
     int firstFoundEntry = directory.foundEntries[0];
     jumpToEntry(firstFoundEntry);
-    std::string res = str + ": " + std::to_string(directory.foundEntries.size()) + " matches";
+    int numberFound = directory.foundEntries.size();
+    std::string res;
+    if (numberFound == 1) {
+        res = str + ": " + std::to_string(numberFound) + " match";
+    }
+    else {
+        res = str + ": " + std::to_string(numberFound) + " matches";
+    }
     return res;
 }

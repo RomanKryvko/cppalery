@@ -46,12 +46,28 @@ void Form::renderImgPreview() {
     }
 }
 
+void Form::setBackground(BackgroundSetter::Mode mode) {
+    if (mainWin.isSelectionAnImage()) {
+        BackgroundSetter back = BackgroundSetter(mode);
+        back.setBackground(mainWin.getCurrentFilePath());
+    }
+}
+
+void Form::setBackground(fs::path imagePath, BackgroundSetter::Mode mode) {
+    if (mainWin.isSelectionAnImage()) {
+        BackgroundSetter back = BackgroundSetter(mode);
+        back.setBackground(imagePath.string());
+    }
+}
+
 void Form::loopOptions() {
     mainWin.printDirectoryContents();
+    commandWin.printStatus(mainWin.getDirPosition() + 1, mainWin.getDirSize());
     renderImgPreview();
     int ch;
 
     while (true) {
+        commandWin.info = "";
         timeout(IMG_DELAY);
         ch = getch();
         // Render image only if user spends more than IMG_DELAY on an entry
@@ -113,26 +129,19 @@ void Form::loopOptions() {
                 if (mainWin.goIntoDirectory()) {
                     this->workPath = mainWin.getDirectory().workPath;
                 }
-                else if (mainWin.isSelectionAnImage()) {
-                    BackgroundSetter back = BackgroundSetter();
-                    back.setBackground(mainWin.getCurrentFilePath());
+                else {
+                    setBackground(BackgroundSetter::Mode::FILL);
                 }
                 break;
             }
 
             case CENTER_CHAR: {
-                if (mainWin.isSelectionAnImage()) {
-                    BackgroundSetter back = BackgroundSetter(BackgroundSetter::Mode::CENTER);
-                    back.setBackground(mainWin.getCurrentFilePath());
-                }
+                setBackground(BackgroundSetter::Mode::CENTER);
                 break;
             }
 
             case FILL_CHAR: {
-                if (mainWin.isSelectionAnImage()) {
-                    BackgroundSetter back = BackgroundSetter();
-                    back.setBackground(mainWin.getCurrentFilePath());
-                }
+                setBackground(BackgroundSetter::Mode::FILL);
                 break;
             }
 
@@ -154,13 +163,26 @@ void Form::loopOptions() {
             case SEARCH_CHAR: {
                 std::string searchString = commandWin.getSearchInput();
                 std::string searchResult = mainWin.findEntryInDirectory(searchString);
-                commandWin.printText(searchResult);
+                commandWin.info = searchResult;
                 break;
             }
 
             case LOOP_RESULTS_CHAR: {
                 std::string searchResult = mainWin.chooseNextFoundEntry();
-                commandWin.printText(searchResult);
+                commandWin.info = searchResult;
+                break;
+            }
+
+            case RANDOM_CHAR: {
+                std::vector<fs::path> images = mainWin.getAllImages();
+                if(!images.empty()) {
+                    srand(time(0));
+                    int idx = rand() % images.size();
+                    setBackground(images[idx], BackgroundSetter::Mode::FILL);
+                }
+                else {
+                    commandWin.info = NO_IMAGE_IN_DIR_MSG;
+                }
                 break;
             }
 
@@ -169,6 +191,7 @@ void Form::loopOptions() {
         }
 
         mainWin.printDirectoryContents();
+        commandWin.printStatus(mainWin.getDirPosition() + 1, mainWin.getDirSize());
         if (mainWin.isSelectionAnImage()) {
             previewWin.resetSetup();
         }
