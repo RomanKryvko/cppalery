@@ -63,7 +63,7 @@ class MainWindow : public Window {
 
         std::vector<fs::path> getAllImages();
 
-        std::string chooseNextFoundEntry();
+        std::string chooseNextFoundEntry(bool orderAsc);
 
         std::string findEntryInDirectory(const std::string &str);
 

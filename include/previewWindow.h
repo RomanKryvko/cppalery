@@ -25,7 +25,9 @@ class PreviewWindow : public Window {
 
         void resetSetup() override;
 
-        void move(int newHeigth, int newWidth, int startX, int startY);
+        void move(int newHeight, int newWidth, int startX, int startY);
+
+        void resize(int newHeight, int newWidth) override;
 
         void startUeberzug();
 

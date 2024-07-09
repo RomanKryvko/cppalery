@@ -24,10 +24,16 @@ void PreviewWindow::resetSetup() {
     wrefresh(this->window);
 }
 
-void PreviewWindow::move(int newHeigth, int newWidth, int startX, int startY) {
+void PreviewWindow::move(int newHeight, int newWidth, int startX, int startY) {
     // for some reason I coudn't get the mvwin to work
     delwin(this->window);
-    this->window = newwin(newHeigth, newWidth, startX, startY);
+    this->window = newwin(newHeight, newWidth, startX, startY);
+    this->resize(newHeight, newWidth);
+}
+
+void PreviewWindow::resize(int newHeight, int newWidth) {
+    this->width = newWidth;
+    this->height = newHeight;
 }
 
 void PreviewWindow::startUeberzug() {

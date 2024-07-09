@@ -57,17 +57,23 @@ void MainWindow::scrollDown() {
 
 void MainWindow::focusScrolling() {
     int selection = directory.selection;
-    if (selection == 0) {
-        ceiling = selection;
+    int dirSize = directory.size();
+    // The first entry is selected OR all contents fit within a single frame
+    // OR selection is among the first entries, i.e. no scroll required
+    if (selection == 0 || (dirSize > 0 && dirSize < height - 2) || (selection < height / 2)) {
+        ceiling = 0;
         return;
     }
+
+    // The selected entry is in range between centre and bottom
+    if (selection + height / 2 >= dirSize) {
+        ceiling = dirSize - height + 2;
+        return;
+    }
+
+    // The selected entry is in the middle of contents
     int correctedCeiling = selection - height / 2;
-    if (correctedCeiling > 0) {
-        ceiling = correctedCeiling;
-    }
-    else {
-        ceiling = selection - 1;
-    }
+    ceiling = (correctedCeiling > 0) ? correctedCeiling : selection - 1;
 }
 
 void MainWindow::resetSetup() {
@@ -91,7 +97,7 @@ bool MainWindow::goUpDirectory() {
 
 bool MainWindow::goIntoDirectory() {
     if (directory.goIntoDirectory()) {
-        ceiling = 0;
+        focusScrolling();
         return true;
     }
     return false;
@@ -184,17 +190,29 @@ std::vector<fs::path> MainWindow::getAllImages() {
     return directory.getAllImages();
 }
 
-std::string MainWindow::chooseNextFoundEntry() {
+std::string MainWindow::chooseNextFoundEntry(bool orderAsc) {
     int currentIdx = directory.chosenFoundEntryIdx;
     std::string res = "";
     if (currentIdx >= 0) {
-        if (currentIdx == directory.foundEntries.size() - 1) {
-            directory.chosenFoundEntryIdx = 0;
-            res = "Search hit BOTTOM, starting from TOP";
+        if (orderAsc) {
+            if (currentIdx == directory.foundEntries.size() - 1) {
+                directory.chosenFoundEntryIdx = 0;
+                res = "Search hit BOTTOM, starting from TOP";
+            }
+            else {
+                directory.chosenFoundEntryIdx++;
+                res = directory.contents[directory.foundEntries[directory.chosenFoundEntryIdx]].path().filename().string();
+            }
         }
         else {
-            directory.chosenFoundEntryIdx++;
-            res = directory.contents[directory.foundEntries[directory.chosenFoundEntryIdx]].path().filename().string();
+            if (currentIdx == 0) {
+                directory.chosenFoundEntryIdx = directory.foundEntries.size() - 1;
+                res = "Search hit TOP, starting from BOTTOM";
+            }
+            else {
+                directory.chosenFoundEntryIdx--;
+                res = directory.contents[directory.foundEntries[directory.chosenFoundEntryIdx]].path().filename().string();
+            }
         }
         jumpToEntry(directory.foundEntries[directory.chosenFoundEntryIdx]);
     }

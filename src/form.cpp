@@ -1,4 +1,5 @@
 #include "form.h"
+#include "keyGlobals.h"
 
 Form::Form(const std::string &workPath) {
     initscr();
@@ -168,7 +169,13 @@ void Form::loopOptions() {
             }
 
             case LOOP_RESULTS_CHAR: {
-                std::string searchResult = mainWin.chooseNextFoundEntry();
+                std::string searchResult = mainWin.chooseNextFoundEntry(true);
+                commandWin.info = searchResult;
+                break;
+            }
+
+            case LOOP_RESULTS_CHAR_BACK: {
+                std::string searchResult = mainWin.chooseNextFoundEntry(false);
                 commandWin.info = searchResult;
                 break;
             }

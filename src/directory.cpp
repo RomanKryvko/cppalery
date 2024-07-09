@@ -46,7 +46,7 @@ bool Directory::isAnImage(int idx) {
 }
 
 int Directory::findIdxOfEntry(const fs::path &path) {
-    for(int i = 0; i < this->size() - 1; i++) {
+    for(int i = 0; i < this->size(); i++) {
         if (this->contents[i].path() == path) {
             return i;
         }
@@ -57,6 +57,9 @@ int Directory::findIdxOfEntry(const fs::path &path) {
 bool Directory::goUpDirectory() {
     fs::path directoryOfEntry = this->workPath;
     if (this->workPath.has_parent_path()) {
+        if (this->dirSize > 0) {
+            this->childDirectoryOfEntry = this->contents[selection].path();
+        }
         this->setupDirectory(fs::canonical(this->workPath / ".."));
         int foundParentIdx = this->findIdxOfEntry(directoryOfEntry);
         if (foundParentIdx > 0) {
@@ -75,6 +78,13 @@ bool Directory::goIntoDirectory() {
         fs::directory_entry currentEntry = this->contents[this->selection];
         if (currentEntry.is_directory()) {
             this->setupDirectory(fs::canonical(currentEntry.path()));
+            if(!this->childDirectoryOfEntry.empty()) {
+                int foundChildIdx = this->findIdxOfEntry(this->childDirectoryOfEntry);
+                if (foundChildIdx > 0) {
+                    this->selection = foundChildIdx;
+                    return true;
+                }
+            }
             this->selection = 0;
             return true;
         }
@@ -145,6 +155,7 @@ void Directory::findAllEntriesInDirectory(const std::string &str) {
                     res.push_back(i);
                 }
             }
+            break;
         }
         if (currentChar > firstChar) {
             high = mid - 1;

@@ -18,10 +18,16 @@ void CommandWindow::resetSetup() {
     werase(this->window);
 }
 
-void CommandWindow::move(int newHeigth, int newWidth, int startX, int startY) {
+void CommandWindow::move(int newHeight, int newWidth, int startX, int startY) {
     // for some reason I coudn't get the mvwin to work
     delwin(this->window);
-    this->window = newwin(newHeigth, newWidth, startX, startY);
+    this->window = newwin(newHeight, newWidth, startX, startY);
+    this->resize(newHeight, newWidth);
+}
+
+void CommandWindow::resize(int newHeight, int newWidth) {
+    this->width = newWidth;
+    this->height = newHeight;
 }
 
 void CommandWindow::printStatus(int position, int total) {

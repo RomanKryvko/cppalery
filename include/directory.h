@@ -14,6 +14,8 @@ class Directory {
     private:
         int dirSize;
 
+        fs::path childDirectoryOfEntry;
+
         void setupDirectory(const std::string &workPath);
 
         static bool caseInsensitiveCompare(const fs::directory_entry& a, const fs::directory_entry& b) {
