@@ -4,6 +4,7 @@
 #include "directory.h"
 #include "window.h"
 #include <cstring>
+#include <string>
 
 enum TermColors
 {
@@ -12,7 +13,8 @@ enum TermColors
     SelectedColor = 2,
     ImageColor = 3,
     SelectedDirColor = 4,
-    EmptyColor = 5
+    EmptyColor = 5,
+    SearchHighlightColor = 6
 };
 
 // Defines on which line from the egde scrolling starts
@@ -22,6 +24,7 @@ class MainWindow : public Window {
     private:
         Directory directory;
         int ceiling;
+        void printColoredString(const char* str, int y, int x, TermColors color);
 
     public:
         MainWindow();
@@ -58,6 +61,8 @@ class MainWindow : public Window {
         void printDirectoryContents();
 
         void toggleDots();
+
+        void toggleRelativePath();
 
         void sortContentsByName(bool ascending = true);
 

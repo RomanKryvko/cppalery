@@ -10,6 +10,7 @@ const int CENTER_CHAR = 'c';
 const int RANDOM_CHAR = 'r';
 const int FILL_CHAR = 'f';
 const int HIDE_CHAR = 'H';
+const int PATH_CHAR = 'p';
 const int ASC_CHAR = 'a';
 const int DESC_CHAR = 'd';
 const int SEARCH_CHAR = '/';

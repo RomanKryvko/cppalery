@@ -1,12 +1,23 @@
 #include "directory.h"
+#include <filesystem>
+#include <vector>
 
 void Directory::setupDirectory(const std::string &workPath) {
     this->workPath = fs::canonical(workPath);
-    this->directoryName = this->workPath;
+    setDirectoryName();
     this->refreshDirectoryContents();
     this->formatDir();
     this->chosenFoundEntryIdx = -1;
     this->foundEntries.clear();
+}
+
+void Directory::setDirectoryName() {
+    if (relativePath && workPath != homePath.parent_path() && workPath != homePath.parent_path().parent_path()) {
+        directoryName = std::string("~" + workPath.string().erase(0, homePath.string().length()));
+    }
+    else {
+        directoryName = workPath;
+    }
 }
 
 bool Directory::inString(std::string haystack, std::string needle) {
@@ -16,17 +27,15 @@ bool Directory::inString(std::string haystack, std::string needle) {
     return haystack.find(needle) != std::string::npos;
 }
 
-Directory::Directory() {
+Directory::Directory() {}
+
+Directory::Directory(const std::string &workPath, bool relativePath) {
     this->selection = 0;
     this->hideDots = true;
     this->nameAsc = true;
     this->chosenFoundEntryIdx = -1;
-}
-
-Directory::Directory(const std::string &workPath) {
-    this->selection = 0;
-    this->hideDots = true;
-    this->nameAsc = true;
+    this->relativePath = relativePath;
+    this->homePath = fs::canonical(getenv("HOME"));
     this->setupDirectory(workPath);
 }
 
@@ -138,37 +147,11 @@ std::vector<fs::path> Directory::getAllImages() {
 }
 
 void Directory::findAllEntriesInDirectory(const std::string &str) {
-    std::vector<int> res;
-    char firstChar = std::tolower(str[0]);
-    int high = this->dirSize - 1;
-    int low = 0;
-    this->nameAsc = true;
-    this->formatDir();
-    while (low <= high) {
-        int mid = low + (high - low) / 2;
-        std::string entryStr = this->contents[mid].path().filename().string();
-        char currentChar = std::tolower(entryStr[0]);
-        if (currentChar == firstChar) {
-            for (int i = low; i <= high; i++) {
-                entryStr = this->contents[i].path().filename().string();
-                if (inString(entryStr, str)) {
-                    res.push_back(i);
-                }
-            }
-            break;
-        }
-        if (currentChar > firstChar) {
-            high = mid - 1;
-        }
-        else {
-            low = mid + 1;
+    foundEntries.clear();
+    for (int i = 0; i < size(); i++) {
+        if (inString(this->contents[i].path().filename().string(), str)) {
+            foundEntries.push_back(i);
         }
     }
-   this->foundEntries = res;
-   if (res.empty()) {
-       this->chosenFoundEntryIdx = -1;
-   }
-   else {
-       this->chosenFoundEntryIdx = 0;
-   }
+    chosenFoundEntryIdx = (foundEntries.size() > 0) ? 0 : -1;
 }

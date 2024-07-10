@@ -1,4 +1,6 @@
 #include "mainWindow.h"
+#include <algorithm>
+#include <vector>
 
 MainWindow::MainWindow() {}
 
@@ -111,12 +113,17 @@ std::string MainWindow::getCurrentFilePath() {
     return this->directory.contents[directory.selection].path().string();
 }
 
+void MainWindow::printColoredString(const char* str, int y, int x, TermColors color) {
+    wattron(this->window, COLOR_PAIR(color));
+    mvwprintw(this->window, y, x, str);
+    wattroff(this->window, COLOR_PAIR(color));
+}
+
 void MainWindow::printDirectoryContents() {
     resetSetup();
     int dirSize = this->directory.size();
     int selection = this->directory.selection;
-    int maxDisplayedIdx = ceiling + height - 2;
-    int floor = (dirSize > maxDisplayedIdx) ? maxDisplayedIdx : dirSize;
+    int floor = std::min(ceiling + height - 2, dirSize);
 
     std::string filesStr = std::string(" Entries total: ").append(std::to_string(dirSize)).append(" ");
     mvwprintw(this->window, this->height - 1, this->width - strlen(filesStr.c_str()) - 2, filesStr.c_str());
@@ -131,38 +138,42 @@ void MainWindow::printDirectoryContents() {
     }
 
     if (dirSize == 0) {
-        wattron(this->window, COLOR_PAIR(TermColors::EmptyColor));
-        mvwprintw(this->window, 1, 1, "Empty");
-        wattroff(this->window, COLOR_PAIR(TermColors::EmptyColor));
+        printColoredString("Empty", 1, 1, TermColors::EmptyColor);
         wrefresh(this->window);
         return;
     }
 
     for (int i = ceiling, j = 1; i < floor; i++, j++) {
-        const std::string entryStr = this->directory.contents[i].path().filename();
+        std::string entryStr = this->directory.contents[i].path().filename();
+        if (isSelectionAnImage() && entryStr.length() > width / 2 - 1) {
+            entryStr = entryStr.substr(0, width / 2 - 2).append("~");
+        }
+        else if (entryStr.length() > width - 2) {
+            entryStr = entryStr.substr(0, width - 3).append("~");
+        }
         const char *entryCStr = entryStr.c_str();
 
         if (i == selection) {
             if (this->directory.contents[selection].is_directory()) {
-                wattron(this->window, COLOR_PAIR(TermColors::SelectedDirColor));
-                mvwprintw(this->window, j, 1, entryCStr);
-                wattroff(this->window, COLOR_PAIR(TermColors::SelectedDirColor));
+                printColoredString(entryCStr, j, 1, TermColors::SelectedDirColor);
+                continue;
             }
             else {
-                wattron(this->window, COLOR_PAIR(TermColors::SelectedColor));
-                mvwprintw(this->window, j, 1, entryCStr);
-                wattroff(this->window, COLOR_PAIR(TermColors::SelectedColor));
+                printColoredString(entryCStr, j, 1, TermColors::SelectedColor);
+                continue;
             }
         }
+        else if (std::find(directory.foundEntries.begin(), directory.foundEntries.end(), i) != directory.foundEntries.end()) {
+            printColoredString(entryCStr, j, 1, TermColors::SearchHighlightColor);
+            continue;
+        }
         else if (this->directory.contents[i].is_directory()) {
-            wattron(this->window, COLOR_PAIR(TermColors::DirColor));
-            mvwprintw(this->window, j, 1, entryCStr);
-            wattroff(this->window, COLOR_PAIR(TermColors::DirColor));
+            printColoredString(entryCStr, j, 1, TermColors::DirColor);
+            continue;
         }
         else if (this->directory.isAnImage(i)) {
-            wattron(this->window, COLOR_PAIR(TermColors::ImageColor));
-            mvwprintw(this->window, j, 1, entryCStr);
-            wattroff(this->window, COLOR_PAIR(TermColors::ImageColor));
+            printColoredString(entryCStr, j, 1, TermColors::ImageColor);
+            continue;
         }
         else {
             mvwprintw(this->window, j, 1, entryCStr);
@@ -179,6 +190,11 @@ void MainWindow::toggleDots() {
     }
     directory.formatDir();
     focusScrolling();
+}
+
+void MainWindow::toggleRelativePath() {
+    directory.relativePath = !directory.relativePath;
+    directory.setDirectoryName();
 }
 
 void MainWindow::sortContentsByName(bool ascending) {

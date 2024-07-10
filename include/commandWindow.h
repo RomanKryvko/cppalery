@@ -21,7 +21,7 @@ class CommandWindow : public Window {
 
         void move(int newHeigth, int newWidth, int startX, int startY);
 
-        void resize(int newHeight, int newWidth);
+        void resize(int newHeight, int newWidth) override;
 
         void printStatus(int position, int total);
 

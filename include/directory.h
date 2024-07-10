@@ -16,6 +16,8 @@ class Directory {
 
         fs::path childDirectoryOfEntry;
 
+        fs::path homePath;
+
         void setupDirectory(const std::string &workPath);
 
         static bool caseInsensitiveCompare(const fs::directory_entry& a, const fs::directory_entry& b) {
@@ -44,13 +46,14 @@ class Directory {
         fs::path workPath;
         bool hideDots;
         bool nameAsc;
+        bool relativePath;
         int selection;
         std::vector<fs::directory_entry> contents;
         std::string directoryName;
         std::vector<int> foundEntries;
         int chosenFoundEntryIdx;
 
-        Directory(const std::string &workPath);
+        Directory(const std::string &workPath, bool relativePath = true);
 
         Directory();
 
@@ -67,6 +70,8 @@ class Directory {
         void refreshDirectoryContents();
 
         void formatDir();
+
+        void setDirectoryName();
 
         std::vector<fs::path> getAllImages();
 

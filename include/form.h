@@ -9,7 +9,6 @@
 #include "previewWindow.h"
 
 namespace fs = std::filesystem;
-namespace ch = std::chrono;
 
 const int BOTTOM_OFFSET = 4;
 const int IMG_DELAY = 200;

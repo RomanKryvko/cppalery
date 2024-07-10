@@ -1,5 +1,6 @@
 #include "form.h"
 #include "keyGlobals.h"
+#include <ncurses.h>
 
 Form::Form(const std::string &workPath) {
     initscr();
@@ -10,6 +11,7 @@ Form::Form(const std::string &workPath) {
     init_pair(TermColors::ImageColor, COLOR_YELLOW, -1);
     init_pair(TermColors::SelectedDirColor, COLOR_BLUE, COLOR_WHITE);
     init_pair(TermColors::EmptyColor, COLOR_WHITE, COLOR_RED);
+    init_pair(TermColors::SearchHighlightColor, COLOR_WHITE, COLOR_YELLOW);
     noecho();
     cbreak();
     intrflush(stdscr, FALSE);
@@ -148,6 +150,11 @@ void Form::loopOptions() {
 
             case HIDE_CHAR: {
                 mainWin.toggleDots();
+                break;
+            }
+
+            case PATH_CHAR: {
+                mainWin.toggleRelativePath();
                 break;
             }
 
