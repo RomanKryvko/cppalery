@@ -175,6 +175,18 @@ void Form::loopOptions() {
                 break;
             }
 
+            case HELP_CHAR: {
+                if (previewWin.isUeberzugRunning) {
+                    previewWin.terminateImgPreview();
+                }
+                commandWin.move(maxRows - BOTTOM_OFFSET, maxCols - 3, BOTTOM_OFFSET, 2);
+                commandWin.printHelp();
+                getch();
+                //reset the form entirely to prevent artifacts from appearing
+                resize();
+                break;
+            }
+
             case LOOP_RESULTS_CHAR: {
                 std::string searchResult = mainWin.chooseNextFoundEntry(true);
                 commandWin.info = searchResult;

@@ -6,6 +6,10 @@
 #include <strstream>
 #include "window.h"
 #include "keyGlobals.h"
+#include <vector>
+#include <array>
+
+const int STATUS_RULER_OFFSET = 5;
 
 class CommandWindow : public Window {
     public:
@@ -26,6 +30,8 @@ class CommandWindow : public Window {
         void printStatus(int position, int total);
 
         std::string getSearchInput();
+
+        void printHelp();
 };
 
 #endif

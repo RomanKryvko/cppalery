@@ -2,7 +2,6 @@
 #define FORM_H
 
 #include "keyGlobals.h"
-#include "directory.h"
 #include "mainWindow.h"
 #include "commandWindow.h"
 #include "backgroundSetter.h"
