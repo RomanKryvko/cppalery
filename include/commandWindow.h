@@ -3,7 +3,6 @@
 
 #include <string>
 #include <iomanip>
-#include <strstream>
 #include "window.h"
 #include "keyGlobals.h"
 #include <vector>

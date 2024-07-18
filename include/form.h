@@ -19,12 +19,16 @@ class Form {
         MainWindow mainWin;
         CommandWindow commandWin;
         PreviewWindow previewWin;
+        BackgroundSetter backSetter;
         int maxRows;
         int maxCols;
         fs::path workPath;
+        bool showPreview;
+        bool sortNameAsc;
+        bool relativePath;
 
     public:
-        Form(const std::string &workPath);
+        Form(const std::string &workPath, const std::string &wallpaperFill, const std::string &wallpaperCenter, bool showPreview, bool sortNameAsc, bool relativePath);
 
         ~Form();
 

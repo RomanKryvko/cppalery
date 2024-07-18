@@ -2,7 +2,7 @@
 #include "keyGlobals.h"
 #include <ncurses.h>
 
-Form::Form(const std::string &workPath) {
+Form::Form(const std::string &workPath, const std::string &wallpaperFill, const std::string &wallpaperCenter, bool showPreview, bool sortNameAsc, bool relativePath) {
     initscr();
     start_color();
     use_default_colors();
@@ -18,10 +18,14 @@ Form::Form(const std::string &workPath) {
     keypad(stdscr, TRUE);
     curs_set(0);
     getmaxyx(stdscr, maxRows, maxCols);
+    this->showPreview = showPreview;
+    this->sortNameAsc = sortNameAsc;
+    this->relativePath = relativePath;
     this->workPath = workPath;
     this->mainWin.initialize(workPath, maxRows - BOTTOM_OFFSET, maxCols - 1);
     this->commandWin.initialize(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
     this->previewWin.initialize(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
+    this->backSetter = BackgroundSetter(wallpaperFill, wallpaperCenter);
     refresh();
 }
 
@@ -51,22 +55,25 @@ void Form::renderImgPreview() {
 
 void Form::setBackground(BackgroundSetter::Mode mode) {
     if (mainWin.isSelectionAnImage()) {
-        BackgroundSetter back = BackgroundSetter(mode);
-        back.setBackground(mainWin.getCurrentFilePath());
+        backSetter.setBackground(mainWin.getCurrentFilePath(), mode);
     }
 }
 
 void Form::setBackground(fs::path imagePath, BackgroundSetter::Mode mode) {
     if (mainWin.isSelectionAnImage()) {
-        BackgroundSetter back = BackgroundSetter(mode);
-        back.setBackground(imagePath.string());
+        backSetter.setBackground(imagePath.string(), mode);
     }
 }
 
 void Form::loopOptions() {
+    mainWin.sortContentsByName(sortNameAsc);
+    if (!relativePath) {
+        mainWin.toggleRelativePath();
+    }
     mainWin.printDirectoryContents();
     commandWin.printStatus(mainWin.getDirPosition() + 1, mainWin.getDirSize());
-    renderImgPreview();
+    if (showPreview)
+        renderImgPreview();
     int ch;
 
     while (true) {
@@ -76,7 +83,8 @@ void Form::loopOptions() {
         // Render image only if user spends more than IMG_DELAY on an entry
         if (ch == ERR) {
             timeout(-1);
-            renderImgPreview();
+            if (showPreview)
+                renderImgPreview();
             ch = getch();
         }
 

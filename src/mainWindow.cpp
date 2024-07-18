@@ -1,5 +1,6 @@
 #include "mainWindow.h"
 #include <algorithm>
+#include <ncurses.h>
 #include <vector>
 
 MainWindow::MainWindow() {}

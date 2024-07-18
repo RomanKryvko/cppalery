@@ -4,17 +4,20 @@ BackgroundSetter::BackgroundSetter() {
     this->mode = BackgroundSetter::Mode::FILL;
 }
 
-BackgroundSetter::BackgroundSetter(BackgroundSetter::Mode mode){
+BackgroundSetter::BackgroundSetter(const std::string &wallpaperCenter, const std::string &wallpaperFill, BackgroundSetter::Mode mode) {
+    this->wallpaperFill = wallpaperFill;
+    this->wallpaperCenter = wallpaperCenter;
     this->mode = mode;
 }
 
-void BackgroundSetter::setBackground(const std::string &fileName) {
+void BackgroundSetter::setBackground(const std::string &fileName, BackgroundSetter::Mode mode) {
+    this->mode = mode;
     std::string command;
     if (mode == Mode::FILL) {
-        command = fehFill + '\"' + fileName + '\"';
+        command = wallpaperFill + '\"' + fileName + "\" > /dev/null";
     }
     else {
-        command = fehCenter + '\"' + fileName + '\"';
+        command = wallpaperCenter + '\"' + fileName + "\" > /dev/null";
     }
 
     system(command.c_str());

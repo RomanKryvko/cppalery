@@ -4,7 +4,6 @@
 #include "directory.h"
 #include "window.h"
 #include <cstring>
-#include <string>
 
 enum TermColors
 {

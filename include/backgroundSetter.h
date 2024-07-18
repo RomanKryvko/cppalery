@@ -6,8 +6,8 @@
 
 class BackgroundSetter {
     private:
-        const std::string fehCenter = "feh --bg-center ";
-        const std::string fehFill = "feh --bg-fill ";
+        std::string wallpaperCenter;
+        std::string wallpaperFill;
 
     public:
         enum Mode {
@@ -19,9 +19,9 @@ class BackgroundSetter {
 
         BackgroundSetter();
 
-        BackgroundSetter(BackgroundSetter::Mode mode);
+        BackgroundSetter(const std::string &wallpaperCenter, const std::string &wallpaperFill, BackgroundSetter::Mode mode = BackgroundSetter::Mode::FILL);
 
-        void setBackground(const std::string &fileName);
+        void setBackground(const std::string &fileName, BackgroundSetter::Mode mode = BackgroundSetter::Mode::FILL);
 
 };
 

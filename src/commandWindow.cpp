@@ -38,7 +38,7 @@ void CommandWindow::printStatus(int position, int total) {
     if (total != 0) {
         int percent = position * 100 / total;
         std::ostringstream oss;
-        oss << position << "/" << total << std::setw(STATUS_RULER_OFFSET ) << percent << "%%";
+        oss << position << "/" << total << std::setw(STATUS_RULER_OFFSET) << percent << "%%";
         std::string posString = oss.str();
         mvwprintw(this->window, 0, this->width - posString.length(), posString.c_str());
     }
