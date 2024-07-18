@@ -22,9 +22,9 @@ Form::Form(const std::string &workPath, const std::string &wallpaperFill, const 
     this->sortNameAsc = sortNameAsc;
     this->relativePath = relativePath;
     this->workPath = workPath;
-    this->mainWin.initialize(workPath, maxRows - BOTTOM_OFFSET, maxCols - 1);
-    this->commandWin.initialize(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
-    this->previewWin.initialize(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
+    this->mainWin = MainWindow(workPath, maxRows - BOTTOM_OFFSET, maxCols - 1, showPreview);
+    this->commandWin = CommandWindow(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
+    this->previewWin = PreviewWindow(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
     this->backSetter = BackgroundSetter(wallpaperFill, wallpaperCenter);
     refresh();
 }
@@ -226,7 +226,7 @@ void Form::loopOptions() {
 
         mainWin.printDirectoryContents();
         commandWin.printStatus(mainWin.getDirPosition() + 1, mainWin.getDirSize());
-        if (mainWin.isSelectionAnImage()) {
+        if (showPreview && mainWin.isSelectionAnImage()) {
             previewWin.resetSetup();
         }
         refresh();

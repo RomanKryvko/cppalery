@@ -1,25 +1,33 @@
 #include "mainWindow.h"
+#include "window.h"
 #include <algorithm>
 #include <ncurses.h>
 #include <vector>
 
 MainWindow::MainWindow() {}
 
-MainWindow::MainWindow(const std::string &workPath, int height, int width) {
+MainWindow::MainWindow(const std::string &workPath, int height, int width, bool showPreview) {
     this->height = height;
     this->width = width;
     this->window = newwin(this->height, this->width, 1, 1);
     this->directory = Directory(workPath);
+    this->showPreview = showPreview;
     ceiling = 0;
 }
 
-// A workaround for a constructor
-void MainWindow::initialize(const std::string &workPath, int height, int width) {
-    this->height = height;
-    this->width = width;
-    this->window = newwin(this->height, this->width, 1, 1);
-    this->directory = Directory(workPath);
-    ceiling = 0;
+MainWindow::MainWindow(const MainWindow& other) {
+    showPreview = other.showPreview;
+    directory = other.directory;
+    ceiling = other.ceiling;
+}
+
+MainWindow& MainWindow::operator=(const MainWindow& other) {
+    Window::operator=(other);
+    showPreview = other.showPreview;
+    directory = other.directory;
+    ceiling = other.ceiling;
+
+    return *this;
 }
 
 Directory MainWindow::getDirectory() {
@@ -146,7 +154,7 @@ void MainWindow::printDirectoryContents() {
 
     for (int i = ceiling, j = 1; i < floor; i++, j++) {
         std::string entryStr = this->directory.contents[i].path().filename();
-        if (isSelectionAnImage() && entryStr.length() > width / 2 - 1) {
+        if (showPreview && isSelectionAnImage() && entryStr.length() > width / 2 - 1) {
             entryStr = entryStr.substr(0, width / 2 - 2).append("~");
         }
         else if (entryStr.length() > width - 2) {

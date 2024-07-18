@@ -9,6 +9,11 @@ class Window {
         int width;
 
         Window();
+
+        Window(const Window& other);
+
+        virtual Window& operator=(const Window& other);
+
         ~Window();
 
         virtual void resetSetup() = 0;

@@ -21,8 +21,6 @@ class PreviewWindow : public Window {
         PreviewWindow(int height, int width, int startY, int startX);
         ~PreviewWindow();
 
-        void initialize(int height, int width, int startY, int startX);
-
         void resetSetup() override;
 
         void move(int newHeight, int newWidth, int startX, int startY);

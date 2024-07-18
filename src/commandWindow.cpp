@@ -8,13 +8,6 @@ CommandWindow::CommandWindow(int height, int width, int startX, int startY) {
     this->window = newwin(this->height, this->width, startX, startY);
 }
 
-// A workaround for a constructor
-void CommandWindow::initialize(int height, int width, int startX, int startY) {
-    this->height = height;
-    this->width = width;
-    this->window = newwin(this->height, this->width, startX, startY);
-}
-
 void CommandWindow::resetSetup() {
     werase(this->window);
 }

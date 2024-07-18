@@ -13,12 +13,6 @@ PreviewWindow::~PreviewWindow() {
     }
 }
 
-void PreviewWindow::initialize(int height, int width, int startY, int startX) {
-    this->height = height;
-    this->width = width;
-    this->window = newwin(this->height, this->width, startY, startX);
-}
-
 void PreviewWindow::resetSetup() {
     werase(this->window);
     wrefresh(this->window);

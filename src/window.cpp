@@ -1,11 +1,45 @@
 #include "window.h"
 
-Window::Window() {}
+Window::Window() : window(nullptr){}
 
 Window::~Window() {
-    if (window != nullptr) {
+    if (window) {
         delwin(window);
     }
+}
+
+Window::Window(const Window& other) {
+    height = other.height;
+    width = other.width;
+    if (other.window) {
+        int starty, startx;
+        getbegyx(other.window, starty, startx);
+        window = newwin(height, width, starty, startx);
+    } else {
+        window = nullptr;
+    }
+}
+
+Window& Window::operator=(const Window& other) {
+    if (this == &other) {
+        return *this;
+    }
+
+    if (window) {
+        delwin(window);
+    }
+
+    height = other.height;
+    width = other.width;
+    if (other.window) {
+        int starty, startx;
+        getbegyx(other.window, starty, startx);
+        window = newwin(height, width, starty, startx);
+    } else {
+        window = nullptr;
+    }
+
+    return *this;
 }
 
 void Window::resize(int height, int width) {

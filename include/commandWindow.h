@@ -17,9 +17,6 @@ class CommandWindow : public Window {
 
         std::string info;
 
-        // A workaround for a constructor
-        void initialize(int height, int width, int startX, int startY);
-
         void resetSetup() override;
 
         void move(int newHeigth, int newWidth, int startX, int startY);

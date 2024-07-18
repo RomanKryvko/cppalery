@@ -26,12 +26,15 @@ class MainWindow : public Window {
         void printColoredString(const char* str, int y, int x, TermColors color);
 
     public:
+        bool showPreview;
+
         MainWindow();
 
-        MainWindow(const std::string &workPath, int height, int width);
+        MainWindow(const std::string &workPath, int height, int width, bool showPreview);
 
-        // A workaround for a constructor
-        void initialize(const std::string &workPath, int height, int width);
+        MainWindow(const MainWindow& other);
+
+        MainWindow& operator=(const MainWindow& other);
 
         Directory getDirectory();
 
