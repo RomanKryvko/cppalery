@@ -1,8 +1,9 @@
 #include "form.h"
+#include "directory.h"
 #include "keyGlobals.h"
 #include <ncurses.h>
 
-Form::Form(const std::string &workPath, const std::string &wallpaperFill, const std::string &wallpaperCenter, bool showPreview, bool sortNameAsc, bool relativePath) {
+Form::Form(Config config) {
     initscr();
     start_color();
     use_default_colors();
@@ -18,14 +19,12 @@ Form::Form(const std::string &workPath, const std::string &wallpaperFill, const 
     keypad(stdscr, TRUE);
     curs_set(0);
     getmaxyx(stdscr, maxRows, maxCols);
-    this->showPreview = showPreview;
-    this->sortNameAsc = sortNameAsc;
-    this->relativePath = relativePath;
-    this->workPath = workPath;
-    this->mainWin = MainWindow(workPath, maxRows - BOTTOM_OFFSET, maxCols - 1, showPreview);
+    this->config = config;
+    this->directory = Directory(config.getPath());
+    this->mainWin = MainWindow(config.getPath(), maxRows - BOTTOM_OFFSET, maxCols - 1, config.showPreview);
     this->commandWin = CommandWindow(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
     this->previewWin = PreviewWindow(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
-    this->backSetter = BackgroundSetter(wallpaperFill, wallpaperCenter);
+    this->backSetter = BackgroundSetter(config.wallpaperFillCommand, config.wallpaperCenterCommand);
     refresh();
 }
 
@@ -66,13 +65,13 @@ void Form::setBackground(fs::path imagePath, BackgroundSetter::Mode mode) {
 }
 
 void Form::loopOptions() {
-    mainWin.sortContentsByName(sortNameAsc);
-    if (!relativePath) {
+    mainWin.sortContentsByName(config.sortByNameAscending);
+    if (!config.isPathRelative) {
         mainWin.toggleRelativePath();
     }
     mainWin.printDirectoryContents();
     commandWin.printStatus(mainWin.getDirPosition() + 1, mainWin.getDirSize());
-    if (showPreview)
+    if (config.showPreview)
         renderImgPreview();
     int ch;
 
@@ -83,7 +82,7 @@ void Form::loopOptions() {
         // Render image only if user spends more than IMG_DELAY on an entry
         if (ch == ERR) {
             timeout(-1);
-            if (showPreview)
+            if (config.showPreview)
                 renderImgPreview();
             ch = getch();
         }
@@ -128,7 +127,7 @@ void Form::loopOptions() {
             case KEY_LEFT_ALT:
             case KEY_LEFT: {
                 if (mainWin.goUpDirectory()) {
-                    this->workPath = mainWin.getDirectory().workPath;
+                    config.setPath(mainWin.getDirectory().workPath);
                 }
                 break;
             }
@@ -138,7 +137,7 @@ void Form::loopOptions() {
             case KEY_ENTER:
             case KEY_RIGHT: {
                 if (mainWin.goIntoDirectory()) {
-                    this->workPath = mainWin.getDirectory().workPath;
+                    config.setPath(mainWin.getDirectory().workPath);
                 }
                 else {
                     setBackground(BackgroundSetter::Mode::FILL);
@@ -226,7 +225,7 @@ void Form::loopOptions() {
 
         mainWin.printDirectoryContents();
         commandWin.printStatus(mainWin.getDirPosition() + 1, mainWin.getDirSize());
-        if (showPreview && mainWin.isSelectionAnImage()) {
+        if (config.showPreview && mainWin.isSelectionAnImage()) {
             previewWin.resetSetup();
         }
         refresh();

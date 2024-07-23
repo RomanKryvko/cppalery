@@ -1,11 +1,13 @@
 #ifndef FORM_H
 #define FORM_H
 
+#include "directory.h"
 #include "keyGlobals.h"
 #include "mainWindow.h"
 #include "commandWindow.h"
 #include "backgroundSetter.h"
 #include "previewWindow.h"
+#include "config.h"
 
 namespace fs = std::filesystem;
 
@@ -19,16 +21,14 @@ class Form {
         MainWindow mainWin;
         CommandWindow commandWin;
         PreviewWindow previewWin;
+        Directory directory;
         BackgroundSetter backSetter;
+        Config config;
         int maxRows;
         int maxCols;
-        fs::path workPath;
-        bool showPreview;
-        bool sortNameAsc;
-        bool relativePath;
 
     public:
-        Form(const std::string &workPath, const std::string &wallpaperFill, const std::string &wallpaperCenter, bool showPreview, bool sortNameAsc, bool relativePath);
+        Form(Config config);
 
         ~Form();
 
