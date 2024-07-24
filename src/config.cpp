@@ -1,4 +1,5 @@
 #include "config.h"
+#include "colors.h"
 #include <stdexcept>
 
 fs::path Config::expandHomeInPath(const std::string &str) {
@@ -16,7 +17,18 @@ Config::Config(bool isPathRelative, bool showPreview, bool sortByNameAscending) 
     this->sortByNameAscending = sortByNameAscending;
     pathSet = false;
     wallpaperCommandsSet = false;
-}
+
+    //Default color table
+    colors =
+    {
+        TermColor(ColorPair::Selected, NCursesColor::WHITE, NCursesColor::BLACK),
+        TermColor(ColorPair::Dir, NCursesColor::BLUE, NCursesColor::WHITE),
+        TermColor(ColorPair::SelectedDirectory, NCursesColor::WHITE, NCursesColor::BLUE),
+        TermColor(ColorPair::Image, NCursesColor::TRANSPARENT, NCursesColor::YELLOW),
+        TermColor(ColorPair::Empty, NCursesColor::RED, NCursesColor::WHITE),
+        TermColor(ColorPair::SearchHighlight, NCursesColor::YELLOW, NCursesColor::WHITE)
+    };
+};
 
 fs::path Config::getPath() {
     return workpath;
@@ -39,6 +51,7 @@ Config::Config(const Config& other) {
     sortByNameAscending = other.sortByNameAscending;
     wallpaperFillCommand = other.wallpaperFillCommand;
     wallpaperCenterCommand = other.wallpaperCenterCommand;
+    colors = other.colors;
 }
 
 Config& Config::operator=(const Config& other) {
@@ -50,6 +63,7 @@ Config& Config::operator=(const Config& other) {
     sortByNameAscending = other.sortByNameAscending;
     wallpaperFillCommand = other.wallpaperFillCommand;
     wallpaperCenterCommand = other.wallpaperCenterCommand;
+    colors = other.colors;
 
     return *this;
 }

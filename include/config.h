@@ -5,6 +5,8 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include <vector>
+#include "colors.h"
 #include <sstream>
 namespace fs = std::filesystem;
 
@@ -30,6 +32,7 @@ class Config {
         bool sortByNameAscending;
         std::string wallpaperFillCommand;
         std::string wallpaperCenterCommand;
+        std::vector<TermColor> colors;
 
         Config(bool isPathRelative = true, bool showPreview = true, bool sortByNameAscending = true);
 

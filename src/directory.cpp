@@ -5,10 +5,9 @@
 void Directory::setupDirectory(const std::string &workPath) {
     this->workPath = fs::canonical(workPath);
     setDirectoryName();
-    this->refreshDirectoryContents();
-    this->formatDir();
-    this->chosenFoundEntryIdx = -1;
-    this->foundEntries.clear();
+    refreshDirectoryContents();
+    formatDir();
+    clearSearchResults();
 }
 
 void Directory::setDirectoryName() {
@@ -30,17 +29,21 @@ bool Directory::inString(std::string haystack, std::string needle) {
 Directory::Directory() {}
 
 Directory::Directory(const std::string &workPath, bool relativePath) {
-    this->selection = 0;
-    this->hideDots = true;
-    this->nameAsc = true;
-    this->chosenFoundEntryIdx = -1;
+    selection = 0;
+    hideDots = true;
+    nameAsc = true;
+    chosenFoundEntryIdx = -1;
     this->relativePath = relativePath;
-    this->homePath = fs::canonical(getenv("HOME"));
-    this->setupDirectory(workPath);
+    homePath = fs::canonical(getenv("HOME"));
+    setupDirectory(workPath);
 }
 
 int Directory::size() const {
-    return this->dirSize;
+    return dirSize;
+}
+
+bool Directory::empty() const {
+    return dirSize < 0;
 }
 
 fs::path Directory::getSelectedFilePathString() const {
@@ -76,12 +79,12 @@ bool Directory::isSelectionAnImage() {
 }
 
 bool Directory::isAnImage(int idx) {
-    return count(imgExtensions.begin(), imgExtensions.end(), this->contents[idx].path().extension());
+    return count(imgExtensions.begin(), imgExtensions.end(), contents[idx].path().extension());
 }
 
 int Directory::findIdxOfEntry(const fs::path &path) {
-    for(int i = 0; i < this->size(); i++) {
-        if (this->contents[i].path() == path) {
+    for(int i = 0; i < size(); i++) {
+        if (contents[i].path() == path) {
             return i;
         }
     }
@@ -94,18 +97,18 @@ void Directory::sortContentsByName(bool ascending) {
 }
 
 bool Directory::goUpDirectory() {
-    fs::path directoryOfEntry = this->workPath;
-    if (this->workPath.has_parent_path()) {
-        if (this->dirSize > 0) {
-            this->childDirectoryOfEntry = this->contents[selection].path();
+    fs::path directoryOfEntry = workPath;
+    if (workPath.has_parent_path()) {
+        if (dirSize > 0) {
+            childDirectoryOfEntry = contents[selection].path();
         }
-        this->setupDirectory(fs::canonical(this->workPath / ".."));
-        int foundParentIdx = this->findIdxOfEntry(directoryOfEntry);
+        setupDirectory(fs::canonical(workPath / ".."));
+        int foundParentIdx = findIdxOfEntry(directoryOfEntry);
         if (foundParentIdx > 0) {
-            this->selection = foundParentIdx;
+            selection = foundParentIdx;
         }
         else {
-            this->selection = 0;
+            selection = 0;
         }
         return true;
     }
@@ -113,18 +116,18 @@ bool Directory::goUpDirectory() {
 }
 
 bool Directory::goIntoDirectory() {
-    if (this->size() > 0) {
-        fs::directory_entry currentEntry = this->contents[this->selection];
+    if (size() > 0) {
+        fs::directory_entry currentEntry = contents[selection];
         if (currentEntry.is_directory()) {
-            this->setupDirectory(fs::canonical(currentEntry.path()));
-            if(!this->childDirectoryOfEntry.empty()) {
-                int foundChildIdx = this->findIdxOfEntry(this->childDirectoryOfEntry);
+            setupDirectory(fs::canonical(currentEntry.path()));
+            if(!childDirectoryOfEntry.empty()) {
+                int foundChildIdx = findIdxOfEntry(childDirectoryOfEntry);
                 if (foundChildIdx > 0) {
-                    this->selection = foundChildIdx;
+                    selection = foundChildIdx;
                     return true;
                 }
             }
-            this->selection = 0;
+            selection = 0;
             return true;
         }
     }
@@ -133,35 +136,35 @@ bool Directory::goIntoDirectory() {
 
 void Directory::refreshDirectoryContents() {
     std::vector<fs::directory_entry> res;
-    for (const auto &entry : fs::directory_iterator(this->workPath)) {
+    for (const auto &entry : fs::directory_iterator(workPath)) {
         res.push_back(entry);
     }
-    this->contents = res;
-    this->dirSize = res.size();
-    if (this->selection > this->dirSize - 1) {
-        this->selection = this->dirSize - 1;
+    contents = res;
+    dirSize = res.size();
+    if (selection > dirSize - 1) {
+        selection = dirSize - 1;
     }
 }
 
 void Directory::formatDir() {
-    if (this->nameAsc) {
-        std::sort(this->contents.begin(), this->contents.end(), caseInsensitiveCompare);
+    if (nameAsc) {
+        std::sort(contents.begin(), contents.end(), caseInsensitiveCompare);
     }
-    if (!this->nameAsc) {
-        std::sort(this->contents.begin(), this->contents.end(), caseInsensitiveCompareDesc);
+    if (!nameAsc) {
+        std::sort(contents.begin(), contents.end(), caseInsensitiveCompareDesc);
     }
-    if (this->hideDots) {
-        for (auto it = this->contents.begin(); it != this->contents.end();) {
+    if (hideDots) {
+        for (auto it = contents.begin(); it != contents.end();) {
             std::string fileName = it->path().filename().string();
             if (fileName[0] == '.') {
-                it = this->contents.erase(it);
+                it = contents.erase(it);
             } else {
                 ++it;
             }
         }
-        this->dirSize = contents.size();
-        if (this->selection > this->dirSize - 1) {
-            this->selection = this->dirSize - 1;
+        dirSize = contents.size();
+        if (selection > dirSize - 1) {
+            selection = dirSize - 1;
         }
     }
 }
@@ -177,12 +180,17 @@ std::vector<fs::path> Directory::getAllImages() {
 }
 
 int Directory::findAllEntriesInDirectory(const std::string &str) {
-    foundEntries.clear();
+    clearSearchResults();
     for (int i = 0; i < size(); i++) {
-        if (inString(this->contents[i].path().filename().string(), str)) {
+        if (inString(contents[i].path().filename().string(), str)) {
             foundEntries.push_back(i);
         }
     }
-    chosenFoundEntryIdx = (foundEntries.size() > 0) ? 0 : -1;
+    chosenFoundEntryIdx = (!foundEntries.empty()) ? 0 : -1;
     return foundEntries.size();
+}
+
+void Directory::clearSearchResults() {
+    foundEntries.clear();
+    chosenFoundEntryIdx = -1;
 }

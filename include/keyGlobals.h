@@ -21,6 +21,7 @@ const int KEY_UP_ALT = 'k';
 const int KEY_DOWN_ALT = 'j';
 const int HELP_CHAR = '?';
 const int KEY_MOVE_TOP = 'g';
+const int KEY_FOCUS = 'z';
 const int KEY_MOVE_BOTTOM = 'G';
 
 #endif

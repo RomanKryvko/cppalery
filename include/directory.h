@@ -18,7 +18,7 @@ class Directory {
 
         fs::path homePath;
 
-        void setupDirectory(const std::string &workPath);
+        fs::path workPath;
 
         void formatDir();
 
@@ -44,8 +44,11 @@ class Directory {
 
         bool inString(std::string haystack, std::string needle);
 
+        void setDirectoryName();
+
+        int findIdxOfEntry(const fs::path &path);
+
     public:
-        fs::path workPath;
         bool hideDots;
         bool nameAsc;
         bool relativePath;
@@ -59,17 +62,21 @@ class Directory {
 
         Directory();
 
+        void setupDirectory(const std::string &workPath);
+
         int size() const;
 
+        bool empty() const;
+
         fs::path getSelectedFilePathString() const;
-
-        void toggleRelativePath();
-
-        void toggleDots();
 
         int getSelection() const;
 
         fs::path getPath() const;
+
+        void toggleRelativePath();
+
+        void toggleDots();
 
         bool isSelectionAnImage();
 
@@ -83,11 +90,9 @@ class Directory {
 
         void refreshDirectoryContents();
 
-        void setDirectoryName();
-
         std::vector<fs::path> getAllImages();
 
-        int findIdxOfEntry(const fs::path &path);
+        void clearSearchResults();
 
         int findAllEntriesInDirectory(const std::string &str);
 

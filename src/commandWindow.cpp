@@ -5,19 +5,19 @@ CommandWindow::CommandWindow() {}
 CommandWindow::CommandWindow(int height, int width, int startX, int startY) {
     this->height = height;
     this->width = width;
-    this->window = newwin(this->height, this->width, startX, startY);
+    this->window = newwin(height, width, startX, startY);
 }
 
 void CommandWindow::resetSetup() {
-    werase(this->window);
+    werase(window);
 }
 
 void CommandWindow::move(int newHeight, int newWidth, int startY, int startX) {
     resetSetup();
     // for some reason I coudn't get the mvwin to work
-    delwin(this->window);
-    this->window = newwin(newHeight, newWidth, startY, startX);
-    this->resize(newHeight, newWidth);
+    delwin(window);
+    window = newwin(newHeight, newWidth, startY, startX);
+    resize(newHeight, newWidth);
 }
 
 void CommandWindow::resize(int newHeight, int newWidth) {
@@ -27,19 +27,19 @@ void CommandWindow::resize(int newHeight, int newWidth) {
 
 void CommandWindow::printStatus(int position, int total) {
     resetSetup();
-    mvwprintw(this->window, 0, 1, this->info.c_str());
+    mvwprintw(window, 0, 1, info.c_str());
     if (total != 0) {
         int percent = position * 100 / total;
         std::ostringstream oss;
         oss << position << "/" << total << std::setw(STATUS_RULER_OFFSET) << percent << "%%";
         std::string posString = oss.str();
-        mvwprintw(this->window, 0, this->width - posString.length(), posString.c_str());
+        mvwprintw(window, 0, width - posString.length(), posString.c_str());
     }
-    wrefresh(this->window);
+    wrefresh(window);
 }
 
 void CommandWindow::printHelp() {
-    box(this->window, 0, 0);
+    box(window, 0, 0);
     const std::string separator = " | ";
     const std::vector<std::array<std::string, 2>> KeySemantics = 
     {
@@ -57,6 +57,7 @@ void CommandWindow::printHelp() {
         {std::string(1, static_cast<char>(LOOP_RESULTS_CHAR_BACK)), "Iterate through results backwards"},
         {std::string(1, static_cast<char>(KEY_MOVE_BOTTOM)), "Go to bottom"},
         {std::string(1, static_cast<char>(KEY_MOVE_TOP)).append(std::string(1, static_cast<char>(KEY_MOVE_TOP))), "Go to top"},
+        {std::string(1, static_cast<char>(KEY_FOCUS)).append(std::string(1, static_cast<char>(KEY_FOCUS))), "Focus scrolling"},
         {std::string(1, static_cast<char>(ASC_CHAR)), "Sort contents by name ascending"},
         {std::string(1, static_cast<char>(DESC_CHAR)), "Sort contents by name descending"},
         {std::string(1, static_cast<char>(HIDE_CHAR)), "Hide / show dotfiles"},
@@ -73,25 +74,25 @@ void CommandWindow::printHelp() {
 
     std::string keysHeader = "key(s)";
     helpStr.append(keysHeader).append(maxKeyWidth - keysHeader.length(), ' ').append(separator).append("command");
-    mvwprintw(this->window, j++, 2, helpStr.c_str());
+    mvwprintw(window, j++, 2, helpStr.c_str());
     helpStr = std::string(width - 3, '-');
-    mvwprintw(this->window, j++, 2, helpStr.c_str());
+    mvwprintw(window, j++, 2, helpStr.c_str());
 
     for (auto i : KeySemantics) {
         helpStr = i[0].append(maxKeyWidth - i[0].length(), ' ').append(separator).append(i[1]);
-        mvwprintw(this->window, j++, 2, helpStr.c_str());
+        mvwprintw(window, j++, 2, helpStr.c_str());
     }
     wrefresh(window);
 }
 
 std::string CommandWindow::getSearchInput() {
     resetSetup();
-    mvwprintw(this->window, 0, 1, "/");
-    wrefresh(this->window);
+    mvwprintw(window, 0, 1, "/");
+    wrefresh(window);
     std::string str = "";
     int ch = getch();
-    mvwprintw(this->window, 0, 2, str.c_str());
-    wrefresh(this->window);
+    mvwprintw(window, 0, 2, str.c_str());
+    wrefresh(window);
     while (ch != KEY_ENTER_ALT && ch != KEY_ENTER) {
         if (ch == KEY_DC || ch == '\b' || ch == KEY_BACKSPACE || ch == KEY_BACKSPACE_ALT) {
             if (str.empty()) {
@@ -108,9 +109,9 @@ std::string CommandWindow::getSearchInput() {
             str.push_back(ch);
         }
         resetSetup();
-        mvwprintw(this->window, 0, 1, "/");
-        mvwprintw(this->window, 0, 2, str.c_str());
-        wrefresh(this->window);
+        mvwprintw(window, 0, 1, "/");
+        mvwprintw(window, 0, 2, str.c_str());
+        wrefresh(window);
         ch = getch();
     }
     return str;

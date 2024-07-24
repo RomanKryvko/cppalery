@@ -4,25 +4,25 @@ PreviewWindow::PreviewWindow() {}
 PreviewWindow::PreviewWindow(int height, int width, int startY, int startX) {
     this->height = height;
     this->width = width;
-    this->window = newwin(this->height, this->width, startY, startX);
+    this->window = newwin(height, width, startY, startX);
 }
 
 PreviewWindow::~PreviewWindow() {
-    if (this->isUeberzugRunning) {
-        this->terminateImgPreview();
+    if (isUeberzugRunning) {
+        terminateImgPreview();
     }
 }
 
 void PreviewWindow::resetSetup() {
-    werase(this->window);
-    wrefresh(this->window);
+    werase(window);
+    wrefresh(window);
 }
 
 void PreviewWindow::move(int newHeight, int newWidth, int startX, int startY) {
     // for some reason I coudn't get the mvwin to work
-    delwin(this->window);
-    this->window = newwin(newHeight, newWidth, startX, startY);
-    this->resize(newHeight, newWidth);
+    delwin(window);
+    window = newwin(newHeight, newWidth, startX, startY);
+    resize(newHeight, newWidth);
 }
 
 void PreviewWindow::resize(int newHeight, int newWidth) {
@@ -63,7 +63,7 @@ void PreviewWindow::startUeberzug() {
     } else {
         close(stdin_pipe[0]);
         close(stdout_pipe[1]);
-        this->isUeberzugRunning = true;
+        isUeberzugRunning = true;
     }
 }
 
@@ -73,7 +73,7 @@ void PreviewWindow::renderImg(const std::string &path, int height, int width, in
     std::string command = oss.str();
 
     if (!isUeberzugRunning) {
-        this->startUeberzug();
+        startUeberzug();
     }
     write(stdin_pipe[1], command.c_str(), command.size());
     write(stdin_pipe[1], "\n", 1);
@@ -83,5 +83,5 @@ void PreviewWindow::terminateImgPreview() {
     close(stdin_pipe[1]);
     int status;
     waitpid(pid, &status, 0);
-    this->isUeberzugRunning = false;
+    isUeberzugRunning = false;
 }

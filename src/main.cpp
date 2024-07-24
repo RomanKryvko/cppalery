@@ -65,7 +65,7 @@ int main (int argc, char** argv) {
     }
 
     Form form = Form(config);
-    form.loopOptions();
+    form.run();
 
     return 0;
 }

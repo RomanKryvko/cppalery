@@ -3,26 +3,16 @@
 
 #include "directory.h"
 #include "window.h"
+#include "colors.h"
+#include <algorithm>
 #include <cstring>
-
-enum TermColors
-{
-    DefaultColor = 0,
-    DirColor = 1,
-    SelectedColor = 2,
-    ImageColor = 3,
-    SelectedDirColor = 4,
-    EmptyColor = 5,
-    SearchHighlightColor = 6
-};
-
-// Defines on which line from the egde scrolling starts
-const int SCROLL_OFFSET = 2;
 
 class MainWindow : public Window {
     private:
+        // Defines on which line from the egde scrolling starts
+        constexpr static int SCROLL_OFFSET = 2;
         int ceiling;
-        void printColoredString(const char* str, int y, int x, TermColors color);
+        void printColoredString(const char* str, int y, int x, ColorPair pair);
 
     public:
         bool showPreview;

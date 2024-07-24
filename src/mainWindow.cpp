@@ -1,16 +1,15 @@
 #include "mainWindow.h"
+#include "colors.h"
 #include "directory.h"
 #include "window.h"
-#include <algorithm>
-#include <ncurses.h>
-#include <vector>
+#include <bits/types/cookie_io_functions_t.h>
 
 MainWindow::MainWindow() {}
 
 MainWindow::MainWindow(int height, int width, Directory* directory) {
     this->height = height;
     this->width = width;
-    this->window = newwin(this->height, this->width, 1, 1);
+    this->window = newwin(height, width, 1, 1);
     this->directory = directory;
     ceiling = 0;
 }
@@ -56,28 +55,26 @@ void MainWindow::scrollDown() {
 void MainWindow::focusScrolling() {
     int selection = directory->selection;
     int directorySize = directory->size();
-    // The first entry is selected OR all contents fit within a single frame
-    // OR selection is among the first entries, i.e. no scroll required
-    if (selection == 0 || (directorySize > 0 && directorySize  < height - 2) || (selection < height / 2)) {
+
+    if (directorySize <= height - 2) {
         ceiling = 0;
         return;
     }
 
-    // The selected entry is in range between centre and bottom
+    // Prevent blank space from appearing when focusing on entries at the bottom of directory
     if (selection + height / 2 >= directorySize) {
         ceiling = directorySize - height + 2;
         return;
     }
 
-    // The selected entry is in the middle of contents
     int correctedCeiling = selection - height / 2;
-    ceiling = (correctedCeiling > 0) ? correctedCeiling : selection - 1;
+    ceiling = std::max(correctedCeiling, 0);
 }
 
 void MainWindow::resetSetup() {
-    werase(this->window);
-    box(this->window, 0, 0);
-    mvwprintw(this->window, 0, 5, " CPPalery ");
+    werase(window);
+    box(window, 0, 0);
+    mvwprintw(window, 0, 5, " CPPalery ");
 }
 
 void MainWindow::jumpToEntry(int idx) {
@@ -86,39 +83,39 @@ void MainWindow::jumpToEntry(int idx) {
 }
 
 
-void MainWindow::printColoredString(const char* str, int y, int x, TermColors color) {
-    wattron(this->window, COLOR_PAIR(color));
-    mvwprintw(this->window, y, x, str);
-    wattroff(this->window, COLOR_PAIR(color));
+void MainWindow::printColoredString(const char* str, int y, int x, ColorPair pair) {
+    wattron(window, COLOR_PAIR(pair));
+    mvwprintw(window, y, x, str);
+    wattroff(window, COLOR_PAIR(pair));
 }
 
 void MainWindow::printDirectoryContents() {
     resetSetup();
-    int dirSize = this->directory->size();
-    int selection = this->directory->selection;
+    int dirSize = directory->size();
+    int selection = directory->selection;
     int floor = std::min(ceiling + height - 2, dirSize);
 
     std::string filesStr = std::string(" Entries total: ").append(std::to_string(dirSize)).append(" ");
-    mvwprintw(this->window, this->height - 1, this->width - strlen(filesStr.c_str()) - 2, filesStr.c_str());
+    mvwprintw(window, height - 1, width - strlen(filesStr.c_str()) - 2, filesStr.c_str());
 
-    mvwprintw(this->window, 0, 20, directory->directoryName.c_str());
+    mvwprintw(window, 0, 20, directory->directoryName.c_str());
 
     if (selection == 0) {
-        mvwprintw(this->window, height - 1, 1, "TOP");
+        mvwprintw(window, height - 1, 1, "TOP");
     }
     if (selection == dirSize - 1) {
-        mvwprintw(this->window, height - 1, 1, "BOT");
+        mvwprintw(window, height - 1, 1, "BOT");
     }
 
     if (dirSize == 0) {
-        printColoredString("Empty", 1, 1, TermColors::EmptyColor);
-        wrefresh(this->window);
+        printColoredString("Empty", 1, 1, ColorPair::Empty);
+        wrefresh(window);
         return;
     }
 
     for (int i = ceiling, j = 1; i < floor; i++, j++) {
-        std::string entryStr = this->directory->contents[i].path().filename();
-        if (showPreview && this->directory->isSelectionAnImage() && entryStr.length() > width / 2 - 1) {
+        std::string entryStr = directory->contents[i].path().filename();
+        if (showPreview && directory->isSelectionAnImage() && entryStr.length() > width / 2 - 1) {
             entryStr = entryStr.substr(0, width / 2 - 2).append("~");
         }
         else if (entryStr.length() > width - 2) {
@@ -127,33 +124,33 @@ void MainWindow::printDirectoryContents() {
         const char *entryCStr = entryStr.c_str();
 
         if (i == selection) {
-            if (this->directory->contents[selection].is_directory()) {
-                printColoredString(entryCStr, j, 1, TermColors::SelectedDirColor);
+            if (directory->contents[selection].is_directory()) {
+                printColoredString(entryCStr, j, 1, ColorPair::SelectedDirectory);
                 continue;
             }
             else {
-                printColoredString(entryCStr, j, 1, TermColors::SelectedColor);
+                printColoredString(entryCStr, j, 1, ColorPair::Selected);
                 continue;
             }
         }
         else if (std::find(directory->foundEntries.begin(), directory->foundEntries.end(), i) != directory->foundEntries.end()) {
-            printColoredString(entryCStr, j, 1, TermColors::SearchHighlightColor);
+            printColoredString(entryCStr, j, 1, ColorPair::SearchHighlight);
             continue;
         }
-        else if (this->directory->contents[i].is_directory()) {
-            printColoredString(entryCStr, j, 1, TermColors::DirColor);
+        else if (directory->contents[i].is_directory()) {
+            printColoredString(entryCStr, j, 1, ColorPair::Dir);
             continue;
         }
-        else if (this->directory->isAnImage(i)) {
-            printColoredString(entryCStr, j, 1, TermColors::ImageColor);
+        else if (directory->isAnImage(i)) {
+            printColoredString(entryCStr, j, 1, ColorPair::Image);
             continue;
         }
         else {
-            mvwprintw(this->window, j, 1, entryCStr);
+            mvwprintw(window, j, 1, entryCStr);
         }
     }
 
-    wrefresh(this->window);
+    wrefresh(window);
 }
 
 std::string MainWindow::chooseNextFoundEntry(bool orderAsc) {
