@@ -30,7 +30,7 @@ void Config::setPath(std::string path) {
     pathSet = true;
 }
 
-Config::Config(Config& other) {
+Config::Config(const Config& other) {
     pathSet = other.pathSet;
     wallpaperCommandsSet = other.wallpaperCommandsSet;
     workpath = other.workpath;
@@ -41,7 +41,7 @@ Config::Config(Config& other) {
     wallpaperCenterCommand = other.wallpaperCenterCommand;
 }
 
-Config& Config::operator=(Config& other) {
+Config& Config::operator=(const Config& other) {
     pathSet = other.pathSet;
     wallpaperCommandsSet = other.wallpaperCommandsSet;
     workpath = other.workpath;

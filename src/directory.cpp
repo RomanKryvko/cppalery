@@ -39,13 +39,38 @@ Directory::Directory(const std::string &workPath, bool relativePath) {
     this->setupDirectory(workPath);
 }
 
-int Directory::size() {
+int Directory::size() const {
     return this->dirSize;
 }
 
+fs::path Directory::getSelectedFilePathString() const {
+    return contents[selection].path().string();
+}
+
+int Directory::getSelection() const {
+    return selection;
+}
+
+fs::path Directory::getPath() const {
+    return workPath;
+}
+
+void Directory::toggleRelativePath() {
+    relativePath = !relativePath;
+    setDirectoryName();
+}
+
+void Directory::toggleDots() {
+    hideDots = !hideDots;
+    if (!hideDots) {
+        refreshDirectoryContents();
+    }
+    formatDir();
+}
+
 bool Directory::isSelectionAnImage() {
-    if (this->dirSize > 0) {
-        return count(imgExtensions.begin(), imgExtensions.end(), this->contents[selection].path().extension());
+    if (dirSize > 0) {
+        return isAnImage(selection);
     }
     return false;
 }
@@ -61,6 +86,11 @@ int Directory::findIdxOfEntry(const fs::path &path) {
         }
     }
     return -1;
+}
+
+void Directory::sortContentsByName(bool ascending) {
+    nameAsc = ascending;
+    formatDir();
 }
 
 bool Directory::goUpDirectory() {
@@ -146,7 +176,7 @@ std::vector<fs::path> Directory::getAllImages() {
     return images;
 }
 
-void Directory::findAllEntriesInDirectory(const std::string &str) {
+int Directory::findAllEntriesInDirectory(const std::string &str) {
     foundEntries.clear();
     for (int i = 0; i < size(); i++) {
         if (inString(this->contents[i].path().filename().string(), str)) {
@@ -154,4 +184,5 @@ void Directory::findAllEntriesInDirectory(const std::string &str) {
         }
     }
     chosenFoundEntryIdx = (foundEntries.size() > 0) ? 0 : -1;
+    return foundEntries.size();
 }

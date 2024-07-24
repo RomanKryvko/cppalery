@@ -20,6 +20,8 @@ class Directory {
 
         void setupDirectory(const std::string &workPath);
 
+        void formatDir();
+
         static bool caseInsensitiveCompare(const fs::directory_entry& a, const fs::directory_entry& b) {
             std::string aName = a.path().filename().string();
             std::string bName = b.path().filename().string();
@@ -57,7 +59,17 @@ class Directory {
 
         Directory();
 
-        int size();
+        int size() const;
+
+        fs::path getSelectedFilePathString() const;
+
+        void toggleRelativePath();
+
+        void toggleDots();
+
+        int getSelection() const;
+
+        fs::path getPath() const;
 
         bool isSelectionAnImage();
 
@@ -67,9 +79,9 @@ class Directory {
 
         bool goIntoDirectory();
 
-        void refreshDirectoryContents();
+        void sortContentsByName(bool ascending);
 
-        void formatDir();
+        void refreshDirectoryContents();
 
         void setDirectoryName();
 
@@ -77,7 +89,9 @@ class Directory {
 
         int findIdxOfEntry(const fs::path &path);
 
-        void findAllEntriesInDirectory(const std::string &str);
+        int findAllEntriesInDirectory(const std::string &str);
+
+        std::string chooseNextFoundEntry(bool orderaAsc);
 };
 
 #endif

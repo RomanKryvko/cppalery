@@ -21,26 +21,21 @@ const int SCROLL_OFFSET = 2;
 
 class MainWindow : public Window {
     private:
-        Directory directory;
         int ceiling;
         void printColoredString(const char* str, int y, int x, TermColors color);
 
     public:
         bool showPreview;
 
+        Directory* directory;
+
         MainWindow();
 
-        MainWindow(const std::string &workPath, int height, int width, bool showPreview);
+        MainWindow(int height, int width, Directory* directory);
 
         MainWindow(const MainWindow& other);
 
         MainWindow& operator=(const MainWindow& other);
-
-        Directory getDirectory();
-
-        int getDirPosition();
-
-        int getDirSize();
 
         void scrollUp();
 
@@ -50,30 +45,11 @@ class MainWindow : public Window {
 
         void resetSetup() override;
 
-        bool goUpDirectory();
-
-        bool goIntoDirectory();
-
         void jumpToEntry(int idx);
-
-        bool isSelectionAnImage();
-
-        std::string getCurrentFilePath();
 
         void printDirectoryContents();
 
-        void toggleDots();
-
-        void toggleRelativePath();
-
-        void sortContentsByName(bool ascending = true);
-
-        std::vector<fs::path> getAllImages();
-
         std::string chooseNextFoundEntry(bool orderAsc);
-
-        std::string findEntryInDirectory(const std::string &str);
-
 };
 
 #endif

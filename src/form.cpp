@@ -2,6 +2,7 @@
 #include "directory.h"
 #include "keyGlobals.h"
 #include <ncurses.h>
+#include <string>
 
 Form::Form(Config config) {
     initscr();
@@ -21,7 +22,7 @@ Form::Form(Config config) {
     getmaxyx(stdscr, maxRows, maxCols);
     this->config = config;
     this->directory = Directory(config.getPath());
-    this->mainWin = MainWindow(config.getPath(), maxRows - BOTTOM_OFFSET, maxCols - 1, config.showPreview);
+    this->mainWin = MainWindow(maxRows - BOTTOM_OFFSET, maxCols - 1, &directory);
     this->commandWin = CommandWindow(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
     this->previewWin = PreviewWindow(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
     this->backSetter = BackgroundSetter(config.wallpaperFillCommand, config.wallpaperCenterCommand);
@@ -43,9 +44,9 @@ void Form::resize() {
 }
 
 void Form::renderImgPreview() {
-    if (mainWin.isSelectionAnImage()) {
+    if (directory.isSelectionAnImage()) {
         previewWin.resetSetup();
-        previewWin.renderImg(mainWin.getCurrentFilePath(), maxRows - BOTTOM_OFFSET - 4, maxCols / 2 - 4, maxCols / 2 + 1, 3);
+        previewWin.renderImg(directory.getSelectedFilePathString(), maxRows - BOTTOM_OFFSET - 4, maxCols / 2 - 4, maxCols / 2 + 1, 3);
     }
     else if (previewWin.isUeberzugRunning) {
         previewWin.terminateImgPreview();
@@ -53,24 +54,24 @@ void Form::renderImgPreview() {
 }
 
 void Form::setBackground(BackgroundSetter::Mode mode) {
-    if (mainWin.isSelectionAnImage()) {
-        backSetter.setBackground(mainWin.getCurrentFilePath(), mode);
+    if (directory.isSelectionAnImage()) {
+        backSetter.setBackground(directory.getSelectedFilePathString(), mode);
     }
 }
 
 void Form::setBackground(fs::path imagePath, BackgroundSetter::Mode mode) {
-    if (mainWin.isSelectionAnImage()) {
+    if (directory.isSelectionAnImage()) {
         backSetter.setBackground(imagePath.string(), mode);
     }
 }
 
 void Form::loopOptions() {
-    mainWin.sortContentsByName(config.sortByNameAscending);
+    directory.sortContentsByName(config.sortByNameAscending);
     if (!config.isPathRelative) {
-        mainWin.toggleRelativePath();
+        directory.toggleRelativePath();
     }
     mainWin.printDirectoryContents();
-    commandWin.printStatus(mainWin.getDirPosition() + 1, mainWin.getDirSize());
+    commandWin.printStatus(directory.getSelection() + 1, directory.size());
     if (config.showPreview)
         renderImgPreview();
     int ch;
@@ -93,14 +94,14 @@ void Form::loopOptions() {
         switch (ch) {
             case KEY_MOVE_TOP: {
                 ch = getch();
-                if (ch == KEY_MOVE_TOP && mainWin.getDirSize() > 0) {
+                if (ch == KEY_MOVE_TOP && directory.size() > 0) {
                     mainWin.jumpToEntry(0);
                 }
                 break;
             }
 
             case KEY_MOVE_BOTTOM: {
-                int dirSize = mainWin.getDirSize();
+                int dirSize = directory.size();
                 if (dirSize > 0) {
                     mainWin.jumpToEntry(dirSize - 1);
                 }
@@ -126,8 +127,9 @@ void Form::loopOptions() {
 
             case KEY_LEFT_ALT:
             case KEY_LEFT: {
-                if (mainWin.goUpDirectory()) {
-                    config.setPath(mainWin.getDirectory().workPath);
+                if (directory.goUpDirectory()) {
+                    config.setPath(directory.getPath());
+                    mainWin.focusScrolling();
                 }
                 break;
             }
@@ -136,8 +138,9 @@ void Form::loopOptions() {
             case KEY_ENTER_ALT:
             case KEY_ENTER:
             case KEY_RIGHT: {
-                if (mainWin.goIntoDirectory()) {
-                    config.setPath(mainWin.getDirectory().workPath);
+                if (directory.goIntoDirectory()) {
+                    config.setPath(directory.getPath());
+                    mainWin.focusScrolling();
                 }
                 else {
                     setBackground(BackgroundSetter::Mode::FILL);
@@ -156,28 +159,42 @@ void Form::loopOptions() {
             }
 
             case HIDE_CHAR: {
-                mainWin.toggleDots();
+                directory.toggleDots();
+                mainWin.focusScrolling();
                 break;
             }
 
             case PATH_CHAR: {
-                mainWin.toggleRelativePath();
+                directory.toggleRelativePath();
                 break;
             }
 
             case ASC_CHAR: {
-                mainWin.sortContentsByName();
+                directory.sortContentsByName(true);
                 break;
             }
 
             case DESC_CHAR: {
-                mainWin.sortContentsByName(false);
+                directory.sortContentsByName(false);
                 break;
             }
 
             case SEARCH_CHAR: {
                 std::string searchString = commandWin.getSearchInput();
-                std::string searchResult = mainWin.findEntryInDirectory(searchString);
+                int matches = directory.findAllEntriesInDirectory(searchString);
+                std::string searchResult;
+                if (matches == 0) {
+                    searchResult = "Pattern not found: " + searchString;
+                }
+                else if (matches == 1) {
+                    searchResult = searchString + ": 1 match";
+                    mainWin.jumpToEntry(directory.foundEntries[0]);
+                }
+                else {
+                    searchResult = searchString + ": " + std::to_string(matches) + " matches";
+                    mainWin.jumpToEntry(directory.foundEntries[0]);
+                }
+
                 commandWin.info = searchResult;
                 break;
             }
@@ -207,7 +224,7 @@ void Form::loopOptions() {
             }
 
             case RANDOM_CHAR: {
-                std::vector<fs::path> images = mainWin.getAllImages();
+                std::vector<fs::path> images = directory.getAllImages();
                 if(!images.empty()) {
                     srand(time(0));
                     int idx = rand() % images.size();
@@ -224,8 +241,8 @@ void Form::loopOptions() {
         }
 
         mainWin.printDirectoryContents();
-        commandWin.printStatus(mainWin.getDirPosition() + 1, mainWin.getDirSize());
-        if (config.showPreview && mainWin.isSelectionAnImage()) {
+        commandWin.printStatus(directory.getSelection() + 1, directory.size());
+        if (config.showPreview && directory.isSelectionAnImage()) {
             previewWin.resetSetup();
         }
         refresh();

@@ -33,9 +33,9 @@ class Config {
 
         Config(bool isPathRelative = true, bool showPreview = true, bool sortByNameAscending = true);
 
-        Config(Config& other);
+        Config(const Config& other);
 
-        Config& operator=(Config& other);
+        Config& operator=(const Config& other);
 
         fs::path getPath();
 

@@ -20,6 +20,7 @@ list(
     "src/mainWindow.cpp"
     "src/previewWindow.cpp"
     "src/window.cpp"
+    "src/config.cpp"
 )
 
 list(

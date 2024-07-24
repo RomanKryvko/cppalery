@@ -3,11 +3,12 @@
 #include <ncurses.h>
 
 class Window {
-    public:
+    protected:
         WINDOW *window;
         int height;
         int width;
 
+    public:
         Window();
 
         Window(const Window& other);
