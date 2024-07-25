@@ -1,7 +1,7 @@
 # CPPalery
 A file browsing and wallpaper setting ncurses-based TUI application. It allows users to navigate through directories, preview images, and set  the chosen images as wallpapers, as well as set a random wallpaper.
 
-![Screenshot of the program.](/assets/images/preview.png)
+![Screenshot of the program.](preview.png)
 
 ## Usage
 ```
