@@ -14,7 +14,7 @@ Options:
 ```
 Press <kbd>?</kbd> in the app to display the list of keybindings.
 
-## Dependecies
+## Dependencies
 * Ueberzug (optional)
 * Wallpaper setting CLI program of your choosing
 
