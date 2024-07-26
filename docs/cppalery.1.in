@@ -1,0 +1,92 @@
+.TH CPPALERY 1 "2024 July" "CPPalery @cppalery_VERSION@"
+
+.SH NAME
+cppalery \- browse directories and set wallpapers from the terminal
+
+.SH SYNOPSIS
+.SY cppalery
+.RI [ options ]
+
+.SH DESCRIPTION
+.PP
+.B cppalery
+is a program meant to browse directories and set wallpapers from the terminal
+
+
+.SH OPTIONS
+
+.TP
+.BR \-h
+Show help message.
+
+
+.TP
+.BR \-c
+Set path to load config file from.
+
+.TP
+.BR <path>
+Set starting workpath.
+
+.SH CONFIGURATION
+The configuration file is located at $HOME/.config/cppalery/config. Comments within the file are denoted by the \'#\' character.
+
+KEYWORDS
+.TP
+.IP \(bu 2.3
+.\}
+.BR workpath
+.sp
+Specifies the initial directory to browse when the application starts.
+
+.TP
+.IP \(bu 2.3
+.\}
+.BR relative_path
+.sp
+Determines whether the relative path is displayed in the application.
+
+.TP
+.IP \(bu 2.3
+.\}
+.BR sort_name_ascending
+.sp
+If set to \'true\', directory contents are sorted by name in ascending order.
+
+.TP
+.IP \(bu 2.3
+.\}
+.BR preview
+.sp
+Enables or disables image previews within the application.
+
+.TP
+.IP \(bu 2.3
+.\}
+.BR wallpaper_set_fill
+.sp
+Specifies the command used to set the wallpaper with the fill option.
+
+.TP
+.IP \(bu 2.3
+.\}
+.BR wallpaper_set_center
+.sp
+Specifies the command used to set the wallpaper with the center option.
+
+.SH EXAMPLE CONFIG FILE
+.BR
+.TP
+.nf
+.BR workpath\ =\ "$HOME/Pictures"
+.TP
+.BR relative_path\ =\ true
+.TP
+.BR sort_name_ascending\ =\ true
+.TP
+.BR preview\ =\ true
+.TP
+.BR wallpaper_set_fill\ =\ "feh\ --bg-fill\ "
+.TP
+.BR wallpaper_set_center\ =\ "feh\ --bg-center\ "
+.fi

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include "form.h"
+#include "version.h"
 #include "keyGlobals.h"
 #include "config.h"
 
@@ -41,6 +42,7 @@ int main (int argc, char** argv) {
                     }
                     else if (argv[i][j] == HELP_FLAG) {
                         std::cout << HELP_MSG;
+                        return 1;
                     }
                 }
             }
@@ -50,7 +52,7 @@ int main (int argc, char** argv) {
                 }
                 catch (const std::exception &ex) {
                     std::cerr << ex.what() << "\n";
-                    return 1;
+                    return 2;
                 }
             }
         }
@@ -61,7 +63,7 @@ int main (int argc, char** argv) {
 
     if (!config.areWallpaperCommandsSet()) {
         std::cerr << "No wallpaper setting backend provided.\n";
-        return 2;
+        return 4;
     }
 
     Form form = Form(config);

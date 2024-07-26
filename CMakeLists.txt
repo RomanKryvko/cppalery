@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(Cppalery)
+project(cppalery VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -28,7 +28,17 @@ list(
     CPPALERY_LIBRARIES
     ncurses
 )
+configure_file("include/version.h.in" "include/version.h")
+configure_file("docs/cppalery.1.in" cppalery.1)
 
 target_sources(cppalery PRIVATE "${CPPALERY_SOURCES}")
 target_include_directories(cppalery PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 target_link_libraries(cppalery PRIVATE "${CPPALERY_LIBRARIES}")
+
+install(TARGETS cppalery RUNTIME)
+install(FILES "${PROJECT_BINARY_DIR}/cppalery" TYPE BIN
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                    GROUP_READ GROUP_EXECUTE
+                    WORLD_READ WORLD_EXECUTE)
+install(FILES "${PROJECT_BINARY_DIR}/cppalery.1"
+        DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")

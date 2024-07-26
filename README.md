@@ -15,6 +15,7 @@ Options:
 Press <kbd>?</kbd> in the app to display the list of keybindings.
 
 ## Dependencies
+* ncurses library
 * Ueberzug (optional)
 * Wallpaper setting CLI program of your choosing
 
@@ -31,3 +32,19 @@ The configuration file is located at $HOME/.config/cppalery/config. Comments sta
 | preview                   | true/false     | Enable image previews.                       |
 | wallpaper_set_fill        | "command"      | Command to set wallpaper with fill option.   |
 | wallpaper_set_center      | "command"      | Command to set wallpaper with center option. |
+
+## Installation
+Specify cmake options of your preference, such as
+```
+cmake -DCMAKE_INSTALL_PREFIX=/usr
+cmake -CMAKE_INSTALL_MANDIR=/usr/share/man
+```
+Then you can build the program with cmake, for example
+```
+cmake -S . -B build/
+cmake --build build/
+```
+Finally, you can install the program to the previously specified directories
+```
+sudo cmake --install build/
+```

@@ -1,5 +1,7 @@
 #include "config.h"
 #include "colors.h"
+#include <cstdlib>
+#include <iostream>
 #include <stdexcept>
 
 fs::path Config::expandHomeInPath(const std::string &str) {
@@ -117,6 +119,12 @@ bool Config::parseConfig(std::string configPath) {
         else if (word == previewConfLine) {
             iss >> word >> word;
             showPreview = (word == "true");
+            if (showPreview) {
+                if (system(UEBERZUG_TEST_COMMAND) == COMMAND_NOT_FOUND) {
+                    std::cerr << "Ueberzug test returned \"command not found\" error:" << COMMAND_NOT_FOUND << '\n';
+                    showPreview = false;
+                }
+            }
             continue;
         }
         else if (word == wallpaperFillConfLine) {
