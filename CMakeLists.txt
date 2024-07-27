@@ -28,8 +28,8 @@ list(
     CPPALERY_LIBRARIES
     ncurses
 )
-configure_file("include/version.h.in" "include/version.h")
-configure_file("docs/cppalery.1.in" cppalery.1)
+configure_file(include/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h)
+configure_file(docs/cppalery.1.in cppalery.1)
 
 target_sources(cppalery PRIVATE "${CPPALERY_SOURCES}")
 target_include_directories(cppalery PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
