@@ -1,17 +1,12 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(cppalery VERSION 1.0)
+project(cppalery VERSION 1.0.2)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(cppalery)
 
-set(CPPALERY_SOURCES)
-set(CPPALERY_LIBRARIES)
-
-list(
-    APPEND
-    CPPALERY_SOURCES
+set(CPPALERY_SOURCES
     "src/backgroundSetter.cpp"
     "src/commandWindow.cpp"
     "src/directory.cpp"
@@ -23,11 +18,10 @@ list(
     "src/config.cpp"
 )
 
-list(
-    APPEND
-    CPPALERY_LIBRARIES
+set(CPPALERY_LIBRARIES
     ncurses
 )
+
 configure_file(include/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h)
 configure_file(docs/cppalery.1.in cppalery.1)
 

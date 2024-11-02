@@ -6,22 +6,23 @@
 #include "colors.h"
 #include <algorithm>
 #include <cstring>
+#include <memory>
 
 class MainWindow : public Window {
     private:
         // Defines on which line from the egde scrolling starts
-        constexpr static int SCROLL_OFFSET = 2;
+        const int SCROLL_OFFSET = 2;
         int ceiling;
         void printColoredString(const char* str, int y, int x, ColorPair pair);
 
     public:
         bool showPreview;
 
-        Directory* directory;
+        std::shared_ptr<Directory> directory;
 
         MainWindow();
 
-        MainWindow(int height, int width, Directory* directory);
+        MainWindow(int height, int width, const std::shared_ptr<Directory> &directory);
 
         MainWindow(const MainWindow& other);
 

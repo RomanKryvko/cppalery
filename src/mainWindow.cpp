@@ -2,13 +2,10 @@
 #include "colors.h"
 #include "directory.h"
 #include "window.h"
-#include <bits/types/cookie_io_functions_t.h>
 
 MainWindow::MainWindow() {}
 
-MainWindow::MainWindow(int height, int width, Directory* directory) {
-    this->height = height;
-    this->width = width;
+MainWindow::MainWindow(int height, int width, const std::shared_ptr<Directory> &directory) : Window(height, width) {
     this->window = newwin(height, width, 1, 1);
     this->directory = directory;
     ceiling = 0;

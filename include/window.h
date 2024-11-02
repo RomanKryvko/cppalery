@@ -11,6 +11,8 @@ class Window {
     public:
         Window();
 
+        Window(int height, int width);
+
         Window(const Window& other);
 
         virtual Window& operator=(const Window& other);

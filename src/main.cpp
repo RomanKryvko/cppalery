@@ -6,6 +6,7 @@
 #include "version.h"
 #include "keyGlobals.h"
 #include "config.h"
+#include <memory>
 
 const char CONFIG_FLAG = 'c';
 const char HELP_FLAG = 'h';
@@ -22,9 +23,9 @@ const std::string HELP_MSG {
 int main (int argc, char** argv) {
     setlocale(LC_ALL, "");
 
-    Config config;
+    std::shared_ptr<Config> config = std::make_shared<Config>();
 
-    if (!config.parseConfig())
+    if (!config->parseConfig())
         std::cerr << "Error in config file\n";
 
     if (argc >= 2) {
@@ -36,7 +37,7 @@ int main (int argc, char** argv) {
                             std::cerr << "No config file provided\n";
                             return 3;
                         }
-                        if (!config.parseConfig(argv[++i]))
+                        if (!config->parseConfig(argv[++i]))
                             std::cerr << "Error in config file\n";
                         break;
                     }
@@ -48,7 +49,7 @@ int main (int argc, char** argv) {
             }
             else {
                 try {
-                    config.setPath(argv[i]);
+                    config->setPath(argv[i]);
                 }
                 catch (const std::exception &ex) {
                     std::cerr << ex.what() << "\n";
@@ -58,10 +59,10 @@ int main (int argc, char** argv) {
         }
     }
 
-    if (!config.isPathSet())
-        config.setPath(fs::current_path());
+    if (!config->isPathSet())
+        config->setPath(fs::current_path());
 
-    if (!config.areWallpaperCommandsSet()) {
+    if (!config->areWallpaperCommandsSet()) {
         std::cerr << "No wallpaper setting backend provided.\n";
         return 4;
     }

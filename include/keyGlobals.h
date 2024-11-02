@@ -1,6 +1,9 @@
 #ifndef KEY_GLOBALS_H
 #define KEY_GLOBALS_H
 
+#include <functional>
+#include <unordered_map>
+
 const int KEY_ENTER_ALT = 10;
 const int KEY_BACKSPACE_ALT = 127;
 const int KEY_ESC = 27;
@@ -24,4 +27,5 @@ const int KEY_MOVE_TOP = 'g';
 const int KEY_FOCUS = 'z';
 const int KEY_MOVE_BOTTOM = 'G';
 
+typedef std::unordered_map<char, std::function<void()>> EventMap;
 #endif

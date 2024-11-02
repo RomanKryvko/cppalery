@@ -1,6 +1,8 @@
 #include "window.h"
 
-Window::Window() : window(nullptr){}
+Window::Window() : window(nullptr) {}
+
+Window::Window(int height, int width) : height(height), width(width), window(nullptr) {}
 
 Window::~Window() {
     if (window) {

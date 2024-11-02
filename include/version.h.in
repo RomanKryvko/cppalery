@@ -1,2 +1,3 @@
 #define cppalery_VERSION_MAJOR @cppalery_VERSION_MAJOR@
 #define cppalery_VERSION_MINOR @cppalery_VERSION_MINOR@
+#define cppalery_VERSION_PATCH @cppalery_VERSION_PATCH@

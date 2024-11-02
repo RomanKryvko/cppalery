@@ -1,10 +1,10 @@
 #include "commandWindow.h"
 #include "keyGlobals.h"
+#include "window.h"
 
-CommandWindow::CommandWindow() {}
-CommandWindow::CommandWindow(int height, int width, int startX, int startY) {
-    this->height = height;
-    this->width = width;
+CommandWindow::CommandWindow() = default;
+
+CommandWindow::CommandWindow(int height, int width, int startX, int startY) : Window(height, width) {
     this->window = newwin(height, width, startX, startY);
 }
 

@@ -1,9 +1,9 @@
 #include "previewWindow.h"
+#include "window.h"
 
-PreviewWindow::PreviewWindow() {}
-PreviewWindow::PreviewWindow(int height, int width, int startY, int startX) {
-    this->height = height;
-    this->width = width;
+PreviewWindow::PreviewWindow() = default;
+
+PreviewWindow::PreviewWindow(int height, int width, int startY, int startX) : Window(height, width) {
     this->window = newwin(height, width, startY, startX);
 }
 
