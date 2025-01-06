@@ -1,71 +1,26 @@
 #include "mainWindow.h"
-#include "colors.h"
-#include "directory.h"
-#include "window.h"
 
 MainWindow::MainWindow() {}
 
-MainWindow::MainWindow(int height, int width, const std::shared_ptr<Directory> &directory) : Window(height, width) {
+MainWindow::MainWindow(int height, int width) : Window(height, width) {
     this->window = newwin(height, width, 1, 1);
-    this->directory = directory;
-    ceiling = 0;
 }
 
 MainWindow::MainWindow(const MainWindow& other) {
-    ceiling = other.ceiling;
     showPreview = other.showPreview;
-    directory = other.directory;
 }
 
 MainWindow& MainWindow::operator=(const MainWindow& other) {
     Window::operator=(other);
-    ceiling = other.ceiling;
     showPreview = other.showPreview;
-    directory = other.directory;
 
     return *this;
 }
 
-void MainWindow::scrollUp() {
-    if (directory->selection > 0) {
-        directory->selection--;
-    }
-    if (ceiling > 0 && directory->selection < ceiling + SCROLL_OFFSET) {
-        ceiling--;
-    }
-}
-
-void MainWindow::scrollDown() {
-    int selection = directory->selection;
-    int directorySize = directory->size();
-    int maxDisplayedIdx = ceiling + height - 2;
-    int floor = (directorySize > maxDisplayedIdx) ? maxDisplayedIdx : directorySize;
-
-    if (selection < directorySize - 1) {
-        directory->selection++;
-    }
-    if (ceiling < directorySize - 1 && selection >= floor - SCROLL_OFFSET && floor != directorySize) {
-        ceiling++;
-    }
-}
-
-void MainWindow::focusScrolling() {
-    int selection = directory->selection;
-    int directorySize = directory->size();
-
-    if (directorySize <= height - 2) {
-        ceiling = 0;
-        return;
-    }
-
-    // Prevent blank space from appearing when focusing on entries at the bottom of directory
-    if (selection + height / 2 >= directorySize) {
-        ceiling = directorySize - height + 2;
-        return;
-    }
-
-    int correctedCeiling = selection - height / 2;
-    ceiling = std::max(correctedCeiling, 0);
+void MainWindow::printColoredString(const char* str, int y, int x, ColorPair pair) {
+    wattron(window, COLOR_PAIR(pair));
+    mvwprintw(window, y, x, "%s", str);
+    wattroff(window, COLOR_PAIR(pair));
 }
 
 void MainWindow::resetSetup() {
@@ -74,54 +29,43 @@ void MainWindow::resetSetup() {
     mvwprintw(window, 0, 5, " CPPalery ");
 }
 
-void MainWindow::jumpToEntry(int idx) {
-    directory->selection = idx;
-    focusScrolling();
-}
-
-
-void MainWindow::printColoredString(const char* str, int y, int x, ColorPair pair) {
-    wattron(window, COLOR_PAIR(pair));
-    mvwprintw(window, y, x, str);
-    wattroff(window, COLOR_PAIR(pair));
-}
-
-void MainWindow::printDirectoryContents() {
+void MainWindow::printDirectoryContents(const Pager& pager, const std::shared_ptr<DirectoryController>& dirController) {
     resetSetup();
-    int dirSize = directory->size();
-    int selection = directory->selection;
-    int floor = std::min(ceiling + height - 2, dirSize);
+    int floor = std::min(pager.getMinDisplayedIdx() + height - 2, pager.getNumberOfElements());
 
-    std::string filesStr = std::string(" Entries total: ").append(std::to_string(dirSize)).append(" ");
-    mvwprintw(window, height - 1, width - strlen(filesStr.c_str()) - 2, filesStr.c_str());
+    std::string filesStr = std::string(" Entries total: ").append(std::to_string(pager.getNumberOfElements())).append(" ");
+    mvwprintw(window, height - 1, width - filesStr.length() - 2, "%s", filesStr.c_str());
 
-    mvwprintw(window, 0, 20, directory->directoryName.c_str());
+    mvwprintw(window, 0, 20, "%s", dirController->getDirectoryName().c_str());
 
-    if (selection == 0) {
+    if (pager.getSelection() == 0) {
         mvwprintw(window, height - 1, 1, "TOP");
     }
-    if (selection == dirSize - 1) {
+    if (pager.getSelection() == pager.getNumberOfElements() - 1) {
         mvwprintw(window, height - 1, 1, "BOT");
     }
 
-    if (dirSize == 0) {
+    if (!dirController->getNumberOfEntries()) {
         printColoredString("Empty", 1, 1, ColorPair::Empty);
         wrefresh(window);
         return;
     }
 
-    for (int i = ceiling, j = 1; i < floor; i++, j++) {
-        std::string entryStr = directory->contents[i].path().filename();
-        if (showPreview && directory->isSelectionAnImage() && entryStr.length() > width / 2 - 1) {
-            entryStr = entryStr.substr(0, width / 2 - 2).append("~");
+    for (int i = pager.getMinDisplayedIdx(), j = 1; i < floor; i++, j++) {
+        const bool isSelectionAnImage = dirController->isAnImage(i);
+        std::string entryStr = dirController->getPathAt(i).filename();
+
+        if (showPreview && isSelectionAnImage && entryStr.length() > width / 2 - 1) {
+            entryStr = truncateString(entryStr, width / 2 - 2);
         }
         else if (entryStr.length() > width - 2) {
-            entryStr = entryStr.substr(0, width - 3).append("~");
+            entryStr = truncateString(entryStr, width - 3);
         }
+
         const char *entryCStr = entryStr.c_str();
 
-        if (i == selection) {
-            if (directory->contents[selection].is_directory()) {
+        if (i == pager.getSelection()) {
+            if (dirController->getEntryAt(pager.getSelection()).is_directory()) {
                 printColoredString(entryCStr, j, 1, ColorPair::SelectedDirectory);
                 continue;
             }
@@ -130,51 +74,22 @@ void MainWindow::printDirectoryContents() {
                 continue;
             }
         }
-        else if (std::find(directory->foundEntries.begin(), directory->foundEntries.end(), i) != directory->foundEntries.end()) {
+        else if (dirController->inFoundEntries(i)) {
             printColoredString(entryCStr, j, 1, ColorPair::SearchHighlight);
             continue;
         }
-        else if (directory->contents[i].is_directory()) {
+        else if (dirController->getEntryAt(i).is_directory()) {
             printColoredString(entryCStr, j, 1, ColorPair::Dir);
             continue;
         }
-        else if (directory->isAnImage(i)) {
+        else if (isSelectionAnImage) {
             printColoredString(entryCStr, j, 1, ColorPair::Image);
             continue;
         }
         else {
-            mvwprintw(window, j, 1, entryCStr);
+            mvwprintw(window, j, 1, "%s", entryCStr);
         }
     }
 
     wrefresh(window);
-}
-
-std::string MainWindow::chooseNextFoundEntry(bool orderAsc) {
-    int currentIdx = directory->chosenFoundEntryIdx;
-    std::string res = "";
-    if (currentIdx >= 0) {
-        if (orderAsc) {
-            if (currentIdx == directory->foundEntries.size() - 1) {
-                directory->chosenFoundEntryIdx = 0;
-                res = "Search hit BOTTOM, starting from TOP";
-            }
-            else {
-                directory->chosenFoundEntryIdx++;
-                res = directory->contents[directory->foundEntries[directory->chosenFoundEntryIdx]].path().filename().string();
-            }
-        }
-        else {
-            if (currentIdx == 0) {
-                directory->chosenFoundEntryIdx = directory->foundEntries.size() - 1;
-                res = "Search hit TOP, starting from BOTTOM";
-            }
-            else {
-                directory->chosenFoundEntryIdx--;
-                res = directory->contents[directory->foundEntries[directory->chosenFoundEntryIdx]].path().filename().string();
-            }
-        }
-        jumpToEntry(directory->foundEntries[directory->chosenFoundEntryIdx]);
-    }
-    return res;
 }

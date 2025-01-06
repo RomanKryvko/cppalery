@@ -1,11 +1,12 @@
 #ifndef FORM_H
 #define FORM_H
 
-#include "directory.h"
+#include "directoryController.h"
 #include "keyGlobals.h"
 #include "mainWindow.h"
 #include "commandWindow.h"
 #include "backgroundSetter.h"
+#include "pager.h"
 #include "previewWindow.h"
 #include "config.h"
 #include <memory>
@@ -14,14 +15,14 @@ namespace fs = std::filesystem;
 
 class Form {
 private:
-    const char* NO_IMAGE_IN_DIR_MSG = "No images of supported formats found in the directory->";
+    static constexpr inline char NO_IMAGE_IN_DIR_MSG[] = "No images of supported formats found in the directory.";
     const int BOTTOM_OFFSET = 4;
     const int IMG_DELAY = 200;
-    std::unique_ptr<Window> focusedWindow;
     std::shared_ptr<MainWindow> mainWin;
     std::shared_ptr<CommandWindow> commandWin;
     std::shared_ptr<PreviewWindow> previewWin;
-    std::shared_ptr<Directory> directory;
+    std::shared_ptr<DirectoryController> directoryController;
+    Pager pager;
     std::shared_ptr<Config> config;
     BackgroundSetter backSetter;
     int maxRows;
@@ -57,109 +58,26 @@ private:
         {RANDOM_CHAR, std::bind(&Form::setRandomBackground, this)},
     };
 
-    void jumpToTop() {
-        int input = getch();
-        if (input == KEY_MOVE_TOP && !directory->empty()) {
-            mainWin->jumpToEntry(0);
-        }
-    }
-    void jumpToBottom() {
-        if (!directory->empty()) {
-            mainWin->jumpToEntry(directory->size() - 1);
-        }
-    }
-    void focus() {
-        int input = getch();
-        if (input == KEY_FOCUS && !directory->empty()) {
-            mainWin->focusScrolling();
-        }
-    }
-    void scrollUp() {
-        mainWin->scrollUp();
-    }
-    void scrollDown() {
-        mainWin->scrollDown();
-    }
-    void goUpDir() {
-        if (directory->goUpDirectory()) {
-            config->setPath(directory->getPath());
-            mainWin->focusScrolling();
-        }
-    }
-    void goIntoDirOrSetBackground() {
-        if (directory->goIntoDirectory()) {
-            config->setPath(directory->getPath());
-            mainWin->focusScrolling();
-        }
-        else {
-            setBackground(BackgroundSetter::Mode::FILL);
-        }
-    }
-    void setBackgroundCenter() {
-        setBackground(BackgroundSetter::Mode::CENTER);
-    }
-    void setBackgroundFill() {
-        setBackground(BackgroundSetter::Mode::FILL);
-    }
-    void toggleDotfiles() {
-        directory->toggleDots();
-        mainWin->focusScrolling();
-    }
-    void toggleRelativePath() {
-        directory->toggleRelativePath();
-    }
-    void sortByNameAscending() {
-        directory->sortContentsByName(true);
-    }
-    void sortByNameDescending() {
-        directory->sortContentsByName(false);
-    }
-    void initiateSearch() {
-        std::string searchString = commandWin->getSearchInput();
-        int matches = directory->findAllEntriesInDirectory(searchString);
-        std::string searchResult;
-        if (matches == 0) {
-            searchResult = "Pattern not found: " + searchString;
-        }
-        else {
-            searchResult = searchString + ": " + std::to_string(matches) + " match";
-            if (matches > 1)
-                searchResult += "es";
-            mainWin->jumpToEntry(directory->foundEntries[0]);
-        }
+    void jumpToTop();
+    void jumpToBottom();
+    void focus();
+    void scrollUp();
+    void scrollDown();
+    void goUpDir();
+    void goIntoDirOrSetBackground();
+    void setBackgroundCenter();
+    void setBackgroundFill();
+    void toggleDotfiles();
+    void toggleRelativePath();
+    void sortByNameAscending();
+    void sortByNameDescending();
+    void initiateSearch();
+    void printHelp();
+    void clearSearchHighlights();
+    void loopResultsForward();
+    void loopResultsBackward();
+    void setRandomBackground();
 
-        commandWin->info = searchResult;
-    }
-    void printHelp() {
-        if (previewWin->isUeberzugRunning) {
-            previewWin->terminateImgPreview();
-        }
-        commandWin->move(maxRows - BOTTOM_OFFSET, maxCols - 3, BOTTOM_OFFSET, 2);
-        commandWin->printHelp();
-        getch();
-        //reset the form entirely to prevent artifacts from appearing
-        resize();
-    }
-    void clearSearchHighlights() {
-        directory->clearSearchResults();
-    }
-    void loopResultsForward() {
-        commandWin->info = mainWin->chooseNextFoundEntry(true);
-    }
-    void loopResultsBackward() {
-        commandWin->info = mainWin->chooseNextFoundEntry(false);
-    }
-    void setRandomBackground() {
-        std::vector<fs::path> images = directory->getAllImages();
-        if(!images.empty()) {
-            srand(time(0));
-            int idx = rand() % images.size();
-            setBackground(images[idx], BackgroundSetter::Mode::FILL);
-        }
-        else {
-            commandWin->info = NO_IMAGE_IN_DIR_MSG;
-        }
-    }
     void initColors();
     void printWindows();
     void printInitialSetup();

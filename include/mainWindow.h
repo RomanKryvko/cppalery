@@ -1,46 +1,34 @@
 #ifndef MAIN_WINDOW_H
 #define MAIN_WINDOW_H
 
-#include "directory.h"
+#include "directoryController.h"
+#include "pager.h"
 #include "window.h"
 #include "colors.h"
-#include <algorithm>
 #include <cstring>
 #include <memory>
 
 class MainWindow : public Window {
-    private:
-        // Defines on which line from the egde scrolling starts
-        const int SCROLL_OFFSET = 2;
-        int ceiling;
-        void printColoredString(const char* str, int y, int x, ColorPair pair);
+private:
+    void printColoredString(const char* str, int y, int x, ColorPair pair);
+    static std::string truncateString(const std::string& str, int maxLength) {
+        return str.substr(0, maxLength).append("~");
+    }
 
-    public:
-        bool showPreview;
+public:
+    bool showPreview;
 
-        std::shared_ptr<Directory> directory;
+    MainWindow();
 
-        MainWindow();
+    MainWindow(int height, int width);
 
-        MainWindow(int height, int width, const std::shared_ptr<Directory> &directory);
+    MainWindow(const MainWindow& other);
 
-        MainWindow(const MainWindow& other);
+    MainWindow& operator=(const MainWindow& other);
 
-        MainWindow& operator=(const MainWindow& other);
+    void resetSetup() override;
 
-        void scrollUp();
-
-        void scrollDown();
-
-        void focusScrolling();
-
-        void resetSetup() override;
-
-        void jumpToEntry(int idx);
-
-        void printDirectoryContents();
-
-        std::string chooseNextFoundEntry(bool orderAsc);
+    void printDirectoryContents(const Pager& pager, const std::shared_ptr<DirectoryController>& dirController);
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "form.h"
 #include "commandWindow.h"
-#include "directory.h"
+#include "directoryController.h"
 #include "previewWindow.h"
 #include <memory>
 
@@ -13,8 +13,9 @@ Form::Form(const std::shared_ptr<Config> &config) : config(config) {
     keypad(stdscr, TRUE);
     curs_set(0);
     getmaxyx(stdscr, maxRows, maxCols);
-    directory = std::make_shared<Directory>(config->getPath(), config->isPathRelative);
-    mainWin = std::make_shared<MainWindow>(maxRows - BOTTOM_OFFSET, maxCols - 1, directory);
+    directoryController = std::make_shared<DirectoryController>(config->getPath(), true, config->sortByNameAscending, config->isPathRelative);
+    mainWin = std::make_shared<MainWindow>(maxRows - BOTTOM_OFFSET, maxCols - 1);
+    pager = Pager(maxRows - BOTTOM_OFFSET - 2, directoryController->getNumberOfEntries());
     commandWin = std::make_shared<CommandWindow>(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
     previewWin = std::make_shared<PreviewWindow>(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
     backSetter = BackgroundSetter(config->wallpaperFillCommand, config->wallpaperCenterCommand);
@@ -39,14 +40,16 @@ void Form::resize() {
     mainWin->resize(maxRows - BOTTOM_OFFSET, maxCols - 1); 
     commandWin->move(1, maxCols, maxRows - BOTTOM_OFFSET + 1, 1);
     previewWin->move(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
-    mainWin->focusScrolling();
+    pager.setHeight(maxRows - BOTTOM_OFFSET - 2);
+    pager.focusScrolling();
     refresh();
 }
 
 void Form::renderImgPreview() {
-    if (directory->isSelectionAnImage()) {
+    if (directoryController->isAnImage(pager.getSelection())) {
         previewWin->resetSetup();
-        previewWin->renderImg(directory->getSelectedFilePathString(), maxRows - BOTTOM_OFFSET - 4, maxCols / 2 - 4, maxCols / 2 + 1, 3);
+        previewWin->renderImg(directoryController->getPathAt(pager.getSelection()).string(),
+                              maxRows - BOTTOM_OFFSET - 4, maxCols / 2 - 4, maxCols / 2 + 1, 3);
     }
     else if (previewWin->isUeberzugRunning) {
         previewWin->terminateImgPreview();
@@ -54,13 +57,13 @@ void Form::renderImgPreview() {
 }
 
 void Form::setBackground(BackgroundSetter::Mode mode) {
-    if (directory->isSelectionAnImage()) {
-        backSetter.setBackground(directory->getSelectedFilePathString(), mode);
+    if (directoryController->isAnImage(pager.getSelection())) {
+        backSetter.setBackground(directoryController->getPathAt(pager.getSelection()).string(), mode);
     }
 }
 
 void Form::setBackground(fs::path imagePath, BackgroundSetter::Mode mode) {
-    if (directory->isSelectionAnImage()) {
+    if (directoryController->isAnImage(pager.getSelection())) {
         backSetter.setBackground(imagePath.string(), mode);
     }
 }
@@ -96,20 +99,153 @@ void Form::run() {
 }
 
 void Form::printWindows() {
-    mainWin->printDirectoryContents();
-    commandWin->printStatus(directory->getSelection() + 1, directory->size());
-    if (config->showPreview && directory->isSelectionAnImage()) {
+    mainWin->printDirectoryContents(pager, directoryController);
+    commandWin->printStatus(pager.getSelection() + 1, directoryController->getNumberOfEntries());
+    if (config->showPreview && directoryController->isAnImage(pager.getSelection())) {
         previewWin->resetSetup();
     }
 }
 
 void Form::printInitialSetup() {
-    directory->sortContentsByName(config->sortByNameAscending);
+    //TODO: rewrite this
+    if (config->sortByNameAscending)
+        directoryController->sortByAscending();
+    else
+        directoryController->sortByDescending();
+
     if (!config->isPathRelative) {
-        directory->toggleRelativePath();
+        directoryController->toggleRelativePath();
     }
-    mainWin->printDirectoryContents();
-    commandWin->printStatus(directory->getSelection() + 1, directory->size());
+    mainWin->printDirectoryContents(pager, directoryController);
+    commandWin->printStatus(pager.getSelection() + 1, directoryController->getNumberOfEntries());
     if (config->showPreview)
         renderImgPreview();
+}
+
+void Form::jumpToTop() {
+    int input = getch();
+    if (input == KEY_MOVE_TOP) {
+        pager.jumpToTop();
+    }
+}
+
+void Form::jumpToBottom() {
+    pager.jumpToBottom();
+}
+
+void Form::focus() {
+    int input = getch();
+    if (input == KEY_FOCUS && directoryController->getNumberOfEntries()) {
+        pager.focusScrolling();
+    }
+}
+
+void Form::scrollUp() {
+    pager.scrollUp();
+}
+
+void Form::scrollDown() {
+    pager.scrollDown();
+}
+
+void Form::goUpDir() {
+    directoryController->goUpDirectory(pager.getSelection());
+    pager.setNumberOfElements(directoryController->getNumberOfEntries());
+    pager.focusScrolling();
+}
+
+void Form::goIntoDirOrSetBackground() {
+    if (directoryController->goIntoDirectory(pager.getSelection())) {
+        pager.setNumberOfElements(directoryController->getNumberOfEntries());
+        pager.focusScrolling();
+    }
+    else {
+        setBackground(BackgroundSetter::Mode::FILL);
+    }
+}
+
+void Form::setBackgroundCenter() {
+    setBackground(BackgroundSetter::Mode::CENTER);
+}
+
+void Form::setBackgroundFill() {
+    setBackground(BackgroundSetter::Mode::FILL);
+}
+
+void Form::toggleDotfiles() {
+    directoryController->toggleDots();
+    pager.setNumberOfElements(directoryController->getNumberOfEntries());
+    pager.focusScrolling();
+}
+
+void Form::toggleRelativePath() {
+    directoryController->toggleRelativePath();
+}
+
+void Form::sortByNameAscending() {
+    directoryController->sortByAscending();
+}
+
+void Form::sortByNameDescending() {
+    directoryController->sortByDescending();
+}
+
+void Form::initiateSearch() {
+    std::string searchString = commandWin->getSearchInput();
+    int matches = directoryController->findAllEntriesInDirectory(searchString);
+    std::string searchResult;
+    if (matches == 0) {
+        searchResult = "Pattern not found: " + searchString;
+    }
+    else {
+        searchResult = searchString + ": " + std::to_string(matches) + " match";
+        if (matches > 1)
+            searchResult += "es";
+        pager.jumpToIdx(directoryController->getFoundEntries()[0]);
+    }
+
+    commandWin->info = searchResult;
+}
+
+void Form::printHelp() {
+    if (previewWin->isUeberzugRunning) {
+        previewWin->terminateImgPreview();
+    }
+    commandWin->move(maxRows - BOTTOM_OFFSET, maxCols - 3, BOTTOM_OFFSET, 2);
+    commandWin->printHelp();
+    getch();
+    //reset the form entirely to prevent artifacts from appearing
+    resize();
+}
+
+void Form::clearSearchHighlights() {
+    directoryController->clearSearchResults();
+}
+
+void Form::loopResultsForward() {
+    int foundEntry = directoryController->getNextFoundEntry();
+    if (foundEntry >= 0) {
+        commandWin->info = directoryController->getPathAt(foundEntry).filename().string();
+        pager.jumpToIdx(foundEntry);
+    }
+}
+
+void Form::loopResultsBackward() {
+    int foundEntry = directoryController->getPreviousFoundEntry();
+    if (foundEntry >= 0) {
+        commandWin->info = directoryController->getPathAt(foundEntry).filename().string();
+        pager.jumpToIdx(foundEntry);
+    }
+}
+
+void Form::setRandomBackground() {
+    std::vector<fs::path> images = directoryController->getAllImages();
+    if(!images.empty()) {
+        srand(time(0));
+        int idx = rand() % images.size();
+        setBackground(images[idx], BackgroundSetter::Mode::FILL);
+    }
+    else {
+        commandWin->info = NO_IMAGE_IN_DIR_MSG;
+    }
 }

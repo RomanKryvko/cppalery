@@ -4,99 +4,35 @@
 #include <vector>
 #include <filesystem>
 #include <string>
-#include <algorithm>
 
 namespace fs = std::filesystem;
 
 const std::vector<std::string> imgExtensions = {".jpg", ".webp", ".png", ".gif", ".jpeg"};
 
 class Directory {
-    private:
-        int dirSize;
+private:
+    std::vector<fs::directory_entry> contents;
+    int dirSize;
+    fs::path workPath;
 
-        fs::path childDirectoryOfEntry;
+public:
+    Directory();
+    Directory(const Directory& other);
+    Directory& operator=(const Directory& other);
 
-        fs::path homePath;
+    Directory(const std::string &workPath);
 
-        fs::path workPath;
+    void setWorkpath(const std::string &workPath);
 
-        void formatDir();
+    int size() const;
 
-        static bool caseInsensitiveCompare(const fs::directory_entry& a, const fs::directory_entry& b) {
-            std::string aName = a.path().filename().string();
-            std::string bName = b.path().filename().string();
+    const std::vector<fs::directory_entry>& getEntries() const;
 
-            std::transform(aName.begin(), aName.end(), aName.begin(), ::tolower);
-            std::transform(bName.begin(), bName.end(), bName.begin(), ::tolower);
+    const fs::path& getWorkpath() const;
 
-            return aName < bName;
-        }
+    bool empty() const;
 
-        static bool caseInsensitiveCompareDesc(const fs::directory_entry& a, const fs::directory_entry& b) {
-            std::string aName = a.path().filename().string();
-            std::string bName = b.path().filename().string();
-
-            std::transform(aName.begin(), aName.end(), aName.begin(), ::tolower);
-            std::transform(bName.begin(), bName.end(), bName.begin(), ::tolower);
-
-            return aName > bName;
-        }
-
-        bool inString(std::string haystack, std::string needle);
-
-        void setDirectoryName();
-
-        int findIdxOfEntry(const fs::path &path);
-
-    public:
-        bool hideDots;
-        bool nameAsc;
-        bool relativePath;
-        int selection;
-        std::vector<fs::directory_entry> contents;
-        std::string directoryName;
-        std::vector<int> foundEntries;
-        int chosenFoundEntryIdx;
-
-        Directory(const std::string &workPath, bool relativePath = true);
-
-        Directory();
-
-        void setupDirectory(const std::string &workPath);
-
-        int size() const;
-
-        bool empty() const;
-
-        fs::path getSelectedFilePathString() const;
-
-        int getSelection() const;
-
-        fs::path getPath() const;
-
-        void toggleRelativePath();
-
-        void toggleDots();
-
-        bool isSelectionAnImage();
-
-        bool isAnImage(int idx);
-
-        bool goUpDirectory();
-
-        bool goIntoDirectory();
-
-        void sortContentsByName(bool ascending);
-
-        void refreshDirectoryContents();
-
-        std::vector<fs::path> getAllImages();
-
-        void clearSearchResults();
-
-        int findAllEntriesInDirectory(const std::string &str);
-
-        std::string chooseNextFoundEntry(bool orderaAsc);
+    void refreshDirectoryContents();
 };
 
 #endif
