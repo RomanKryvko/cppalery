@@ -79,7 +79,7 @@ void MainWindow::printDirectoryContents(const Pager& pager, const std::shared_pt
             continue;
         }
         else if (dirController->getEntryAt(i).is_directory()) {
-            printColoredString(entryCStr, j, 1, ColorPair::Dir);
+            printColoredString(entryCStr, j, 1, ColorPair::Directory);
             continue;
         }
         else if (isSelectionAnImage) {

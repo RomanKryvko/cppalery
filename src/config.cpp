@@ -24,11 +24,11 @@ Config::Config(bool isPathRelative, bool showPreview, bool sortByNameAscending) 
     colors =
     {
         TermColor(ColorPair::Selected, NCursesColor::WHITE, NCursesColor::BLACK),
-        TermColor(ColorPair::Dir, NCursesColor::BLUE, NCursesColor::WHITE),
+        TermColor(ColorPair::Directory, NCursesColor::BLUE, NCursesColor::WHITE),
         TermColor(ColorPair::SelectedDirectory, NCursesColor::WHITE, NCursesColor::BLUE),
         TermColor(ColorPair::Image, NCursesColor::TRANSPARENT, NCursesColor::YELLOW),
         TermColor(ColorPair::Empty, NCursesColor::RED, NCursesColor::WHITE),
-        TermColor(ColorPair::SearchHighlight, NCursesColor::YELLOW, NCursesColor::WHITE)
+        TermColor(ColorPair::SearchHighlight, NCursesColor::YELLOW, NCursesColor::BLACK)
     };
 };
 

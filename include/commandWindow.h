@@ -2,11 +2,7 @@
 #define COMMAND_WINDOW_H
 
 #include <string>
-#include <iomanip>
 #include "window.h"
-#include "keyGlobals.h"
-#include <vector>
-#include <array>
 
 const int STATUS_RULER_OFFSET = 5;
 

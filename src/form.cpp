@@ -1,8 +1,4 @@
 #include "form.h"
-#include "commandWindow.h"
-#include "directoryController.h"
-#include "previewWindow.h"
-#include <memory>
 
 Form::Form(const std::shared_ptr<Config> &config) : config(config) {
     initscr();
@@ -26,7 +22,7 @@ void Form::initColors() {
     start_color();
     use_default_colors();
     for (const auto &color : config->colors) {
-        init_pair(color.colorPair, color.foreground, color.background);
+        init_pair((short) color.colorPair, (short) color.foreground, (short) color.background);
     }
 }
 
@@ -62,7 +58,7 @@ void Form::setBackground(BackgroundSetter::Mode mode) {
     }
 }
 
-void Form::setBackground(fs::path imagePath, BackgroundSetter::Mode mode) {
+void Form::setBackground(const fs::path& imagePath, BackgroundSetter::Mode mode) {
     if (directoryController->isAnImage(pager.getSelection())) {
         backSetter.setBackground(imagePath.string(), mode);
     }
@@ -89,10 +85,7 @@ void Form::run() {
             break;
         }
 
-        auto it = formEvents.find(ch);
-        if (it != formEvents.end()) {
-            it->second();
-        }
+        keybindings.handleKeyPress(ch);
 
         printWindows();
     }
@@ -122,32 +115,6 @@ void Form::printInitialSetup() {
         renderImgPreview();
 }
 
-void Form::jumpToTop() {
-    int input = getch();
-    if (input == KEY_MOVE_TOP) {
-        pager.jumpToTop();
-    }
-}
-
-void Form::jumpToBottom() {
-    pager.jumpToBottom();
-}
-
-void Form::focus() {
-    int input = getch();
-    if (input == KEY_FOCUS && directoryController->getNumberOfEntries()) {
-        pager.focusScrolling();
-    }
-}
-
-void Form::scrollUp() {
-    pager.scrollUp();
-}
-
-void Form::scrollDown() {
-    pager.scrollDown();
-}
-
 void Form::goUpDir() {
     fs::path oldDir = directoryController->getWorkpath();
     directoryHistory[oldDir] = directoryController->getPathAt(pager.getSelection());
@@ -165,11 +132,12 @@ void Form::goIntoDirOrSetBackground() {
             int newIdx = std::max(0, directoryController->
                                   findIdxOfEntry(directoryHistory.at(directoryController->getWorkpath())));
             pager.jumpToIdx(newIdx);
+            return;
         }
+        pager.jumpToTop();
+        return;
     }
-    else {
-        setBackground(BackgroundSetter::Mode::FILL);
-    }
+    setBackground(BackgroundSetter::Mode::FILL);
 }
 
 void Form::setBackgroundCenter() {

@@ -4,7 +4,6 @@
 #include <string>
 #include "form.h"
 #include "version.h"
-#include "keyGlobals.h"
 #include "config.h"
 #include <memory>
 
@@ -17,7 +16,7 @@ const std::string HELP_MSG {
     " -" + std::string{HELP_FLAG} + "\t\tPrint this help message\n"
     " -" + std::string{CONFIG_FLAG} + "\t\tSet path to load config file from\n"
     " <path>\t\tSet starting workpath\n\n"
-    " Press " + std::string{HELP_CHAR} + " in the app to display keybindings\n"
+    " Press \"?\" in the app to display keybindings\n"
 };
 
 int main (int argc, char** argv) {

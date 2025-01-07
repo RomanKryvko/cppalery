@@ -2,7 +2,7 @@
 #define FORM_H
 
 #include "directoryController.h"
-#include "keyGlobals.h"
+#include "keybindings.h"
 #include "mainWindow.h"
 #include "commandWindow.h"
 #include "backgroundSetter.h"
@@ -30,41 +30,36 @@ private:
     int maxRows;
     int maxCols;
 
-    EventMap formEvents = {
-        {KEY_MOVE_TOP, std::bind(&Form::jumpToTop, this)},
-        {KEY_MOVE_BOTTOM, std::bind(&Form::jumpToBottom, this)},
-        {KEY_FOCUS, std::bind(&Form::focus, this)},
-        {KEY_RESIZE, std::bind(&Form::resize, this)},
-        {KEY_UP, std::bind(&Form::scrollUp, this)},
-        {KEY_UP_ALT, std::bind(&Form::scrollUp, this)},
-        {KEY_DOWN, std::bind(&Form::scrollDown, this)},
-        {KEY_DOWN_ALT, std::bind(&Form::scrollDown, this)},
-        {KEY_LEFT, std::bind(&Form::goUpDir, this)},
-        {KEY_LEFT_ALT, std::bind(&Form::goUpDir, this)},
-        {KEY_RESIZE, std::bind(&Form::resize, this)},
-        {KEY_RIGHT, std::bind(&Form::goIntoDirOrSetBackground, this)},
-        {KEY_RIGHT_ALT, std::bind(&Form::goIntoDirOrSetBackground, this)},
-        {KEY_ENTER, std::bind(&Form::goIntoDirOrSetBackground, this)},
-        {KEY_ENTER_ALT, std::bind(&Form::goIntoDirOrSetBackground, this)},
-        {CENTER_CHAR, std::bind(&Form::setBackgroundCenter, this)},
-        {FILL_CHAR, std::bind(&Form::setBackgroundFill, this)},
-        {HIDE_CHAR, std::bind(&Form::toggleDotfiles, this)},
-        {PATH_CHAR, std::bind(&Form::toggleRelativePath, this)},
-        {ASC_CHAR, std::bind(&Form::sortByNameAscending, this)},
-        {DESC_CHAR, std::bind(&Form::sortByNameDescending, this)},
-        {SEARCH_CHAR, std::bind(&Form::initiateSearch, this)},
-        {HELP_CHAR, std::bind(&Form::printHelp, this)},
-        {KEY_ESC, std::bind(&Form::clearSearchHighlights, this)},
-        {LOOP_RESULTS_CHAR, std::bind(&Form::loopResultsForward, this)},
-        {LOOP_RESULTS_CHAR_BACK, std::bind(&Form::loopResultsBackward, this)},
-        {RANDOM_CHAR, std::bind(&Form::setRandomBackground, this)},
-    };
+    Keybindings keybindings = Keybindings({
+        {{'g', 'g'}, std::bind(&Pager::jumpToTop, &pager)},
+        {{'G'}, std::bind(&Pager::jumpToBottom, &pager)},
+        {{'z', 'z'}, std::bind(&Pager::focusScrolling, &pager)},
+        {{KEY_UP}, std::bind(&Pager::scrollUp, &pager)},
+        {{'k'}, std::bind(&Pager::scrollUp, &pager)},
+        {{KEY_DOWN}, std::bind(&Pager::scrollDown, &pager)},
+        {{'j'}, std::bind(&Pager::scrollDown, &pager)},
+        {{KEY_RESIZE}, std::bind(&Form::resize, this)},
+        {{KEY_LEFT}, std::bind(&Form::goUpDir, this)},
+        {{'h'}, std::bind(&Form::goUpDir, this)},
+        {{KEY_RESIZE}, std::bind(&Form::resize, this)},
+        {{KEY_RIGHT}, std::bind(&Form::goIntoDirOrSetBackground, this)},
+        {{'l'}, std::bind(&Form::goIntoDirOrSetBackground, this)},
+        {{KEY_ENTER}, std::bind(&Form::goIntoDirOrSetBackground, this)},
+        {{KEY_ENTER_ALT}, std::bind(&Form::goIntoDirOrSetBackground, this)},
+        {{'c'}, std::bind(&Form::setBackgroundCenter, this)},
+        {{'f'}, std::bind(&Form::setBackgroundFill, this)},
+        {{'H'}, std::bind(&Form::toggleDotfiles, this)},
+        {{'p'}, std::bind(&Form::toggleRelativePath, this)},
+        {{'a'}, std::bind(&Form::sortByNameAscending, this)},
+        {{'d'}, std::bind(&Form::sortByNameDescending, this)},
+        {{'/'}, std::bind(&Form::initiateSearch, this)},
+        {{'?'}, std::bind(&Form::printHelp, this)},
+        {{KEY_ESC}, std::bind(&Form::clearSearchHighlights, this)},
+        {{'n'}, std::bind(&Form::loopResultsForward, this)},
+        {{'N'}, std::bind(&Form::loopResultsBackward, this)},
+        {{'r'}, std::bind(&Form::setRandomBackground, this)}
+    });
 
-    void jumpToTop();
-    void jumpToBottom();
-    void focus();
-    void scrollUp();
-    void scrollDown();
     void goUpDir();
     void goIntoDirOrSetBackground();
     void setBackgroundCenter();
@@ -95,7 +90,7 @@ public:
 
     void setBackground(BackgroundSetter::Mode mode);
 
-    void setBackground(fs::path imagePath, BackgroundSetter::Mode mode);
+    void setBackground(const fs::path& imagePath, BackgroundSetter::Mode mode);
 
     void run();
 };

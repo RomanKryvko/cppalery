@@ -3,10 +3,10 @@
 
 #include <ncurses.h>
 
-enum ColorPair {
+enum class ColorPair {
     // in ncurses 0 is reserved for default terminal colors
     Default = 0,
-    Dir,
+    Directory,
     Selected,
     Image,
     SelectedDirectory,
@@ -14,7 +14,7 @@ enum ColorPair {
     SearchHighlight
 };
 
-enum NCursesColor {
+enum class NCursesColor {
         TRANSPARENT = -1,
         WHITE = COLOR_WHITE,
         BLACK = COLOR_BLACK,

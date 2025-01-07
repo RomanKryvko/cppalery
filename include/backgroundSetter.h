@@ -10,7 +10,7 @@ class BackgroundSetter {
         std::string wallpaperFill;
 
     public:
-        enum Mode {
+        enum class Mode {
             FILL,
             CENTER
         };

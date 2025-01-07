@@ -1,6 +1,8 @@
 #include "commandWindow.h"
-#include "keyGlobals.h"
+#include "keybindings.h"
 #include "window.h"
+#include <sstream>
+#include <iomanip>
 
 CommandWindow::CommandWindow() = default;
 
@@ -27,13 +29,13 @@ void CommandWindow::resize(int newHeight, int newWidth) {
 
 void CommandWindow::printStatus(int position, int total) {
     resetSetup();
-    mvwprintw(window, 0, 1, info.c_str());
+    mvwprintw(window, 0, 1, "%s", info.c_str());
     if (total != 0) {
         int percent = position * 100 / total;
         std::ostringstream oss;
         oss << position << "/" << total << std::setw(STATUS_RULER_OFFSET) << percent << "%%";
         std::string posString = oss.str();
-        mvwprintw(window, 0, width - posString.length(), posString.c_str());
+        mvwprintw(window, 0, width - posString.length(), "%s", posString.c_str());
     }
     wrefresh(window);
 }
@@ -44,24 +46,24 @@ void CommandWindow::printHelp() {
     const std::vector<std::array<std::string, 2>> KeySemantics = 
     {
         {std::string(1, static_cast<char>(QUIT_CHAR)), "Quit"},
-        {std::string("ARROW LEFT").append(separator).append(std::string(1, static_cast<char>(KEY_LEFT_ALT))), "Move left"},
-        {std::string("ARROW UP").append(separator).append(std::string(1, static_cast<char>(KEY_UP_ALT))), "Move up"},
-        {std::string("ARROW DOWN").append(separator).append(std::string(1, static_cast<char>(KEY_DOWN_ALT))), "Move down"},
-        {std::string("Enter | ARROW RIGHT").append(separator).append(std::string(1, static_cast<char>(KEY_RIGHT_ALT))), "Move right"},
-        {std::string(1, static_cast<char>(HELP_CHAR)), "Display this help message"},
-        {std::string("Enter | ARROW RIGHT").append(separator).append(std::string(1, static_cast<char>(KEY_RIGHT_ALT))), "Set background (fill)"},
-        {std::string(1, static_cast<char>(CENTER_CHAR)), "Set background (centre)"},
-        {std::string(1, static_cast<char>(RANDOM_CHAR)), "Set random background (fill)"},
-        {std::string(1, static_cast<char>(SEARCH_CHAR)), "Search for substring in filenames"},
-        {std::string(1, static_cast<char>(LOOP_RESULTS_CHAR)), "Iterate through results forward"},
-        {std::string(1, static_cast<char>(LOOP_RESULTS_CHAR_BACK)), "Iterate through results backwards"},
-        {std::string(1, static_cast<char>(KEY_MOVE_BOTTOM)), "Go to bottom"},
-        {std::string(1, static_cast<char>(KEY_MOVE_TOP)).append(std::string(1, static_cast<char>(KEY_MOVE_TOP))), "Go to top"},
-        {std::string(1, static_cast<char>(KEY_FOCUS)).append(std::string(1, static_cast<char>(KEY_FOCUS))), "Focus scrolling"},
-        {std::string(1, static_cast<char>(ASC_CHAR)), "Sort contents by name ascending"},
-        {std::string(1, static_cast<char>(DESC_CHAR)), "Sort contents by name descending"},
-        {std::string(1, static_cast<char>(HIDE_CHAR)), "Hide / show dotfiles"},
-        {std::string(1, static_cast<char>(PATH_CHAR)), "Absolute / relative path"}
+        {std::string("ARROW LEFT").append(separator).append(std::string(1, static_cast<char>('h'))), "Move left"},
+        {std::string("ARROW UP").append(separator).append(std::string(1, static_cast<char>('k'))), "Move up"},
+        {std::string("ARROW DOWN").append(separator).append(std::string(1, static_cast<char>('j'))), "Move down"},
+        {std::string("Enter | ARROW RIGHT").append(separator).append(std::string(1, static_cast<char>('l'))), "Move right"},
+        {std::string(1, static_cast<char>('?')), "Display this help message"},
+        {std::string("Enter | ARROW RIGHT").append(separator).append(std::string(1, static_cast<char>('l'))), "Set background (fill)"},
+        {std::string(1, static_cast<char>('c')), "Set background (centre)"},
+        {std::string(1, static_cast<char>('r')), "Set random background (fill)"},
+        {std::string(1, static_cast<char>('/')), "Search for substring in filenames"},
+        {std::string(1, static_cast<char>('n')), "Iterate through results forward"},
+        {std::string(1, static_cast<char>('N')), "Iterate through results backwards"},
+        {std::string(1, static_cast<char>('G')), "Go to bottom"},
+        {std::string(1, static_cast<char>('g')).append(std::string(1, static_cast<char>('g'))), "Go to top"},
+        {std::string(1, static_cast<char>('z')).append(std::string(1, static_cast<char>('z'))), "Focus scrolling"},
+        {std::string(1, static_cast<char>('a')), "Sort contents by name ascending"},
+        {std::string(1, static_cast<char>('d')), "Sort contents by name descending"},
+        {std::string(1, static_cast<char>('H')), "Hide / show dotfiles"},
+        {std::string(1, static_cast<char>('p')), "Absolute / relative path"}
     };
 
     std::string helpStr;
