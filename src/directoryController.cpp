@@ -1,5 +1,4 @@
 #include "directoryController.h"
-#include <filesystem>
 
 DirectoryController::DirectoryController() = default;
 
@@ -114,15 +113,11 @@ int DirectoryController::findIdxOfEntry(const fs::path& path) const {
     return -1;
 }
 
-void DirectoryController::goUpDirectory(int idx) {
+void DirectoryController::goUpDirectory() {
     const fs::path directoryOfEntry = directory.getWorkpath();
     const fs::path* workpath = &directory.getWorkpath();
 
     if (workpath->has_parent_path()) {
-        if (shownEntries.size()) {
-            childDirectoryOfEntry = shownEntries[idx]->path();
-        }
-
         directory = Directory(fs::canonical(*workpath / ".."));
         doFullDirectorySetup();
     }
@@ -167,6 +162,10 @@ int DirectoryController::getNumberOfEntries() const {
 
 const std::string& DirectoryController::getDirectoryName() const {
     return directoryName;
+}
+
+const fs::path& DirectoryController::getWorkpath() const {
+    return directory.getWorkpath();
 }
 
 const fs::path& DirectoryController::getPathAt(int idx) const {

@@ -27,7 +27,6 @@ private:
     void setDirectoryName();
     void doFullDirectorySetup();
     void copyFromOther(const DirectoryController& other);
-    int findIdxOfEntry(const fs::path &path) const;
 
     static bool caseInsensitiveCompare(const fs::directory_entry* a, const fs::directory_entry* b) {
         std::string aName = a->path().filename().string();
@@ -60,7 +59,7 @@ public:
     DirectoryController& operator=(const DirectoryController& other);
 
     bool goIntoDirectory(int idx);
-    void goUpDirectory(int idx);
+    void goUpDirectory();
 
     void toggleDots();
     void toggleRelativePath();
@@ -74,9 +73,11 @@ public:
     const std::vector<int>& getFoundEntries() const;
     int getNumberOfEntries() const;
     const std::string& getDirectoryName() const;
+    const fs::path& getWorkpath() const;
     const fs::path& getPathAt(int idx) const;
     const fs::directory_entry& getEntryAt(int idx) const;
     const std::vector<const fs::directory_entry*>& getAllEntries() const;
+    int findIdxOfEntry(const fs::path &path) const;
 
     bool inFoundEntries(int idx) const;
 

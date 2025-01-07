@@ -9,6 +9,7 @@
 #include "pager.h"
 #include "previewWindow.h"
 #include "config.h"
+#include <map>
 #include <memory>
 
 namespace fs = std::filesystem;
@@ -25,6 +26,7 @@ private:
     Pager pager;
     std::shared_ptr<Config> config;
     BackgroundSetter backSetter;
+    std::map<fs::path, fs::path> directoryHistory;
     int maxRows;
     int maxCols;
 

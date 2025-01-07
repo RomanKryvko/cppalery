@@ -149,15 +149,23 @@ void Form::scrollDown() {
 }
 
 void Form::goUpDir() {
-    directoryController->goUpDirectory(pager.getSelection());
+    fs::path oldDir = directoryController->getWorkpath();
+    directoryHistory[oldDir] = directoryController->getPathAt(pager.getSelection());
+    directoryController->goUpDirectory();
+    //NOTE: this check is redundant, unless the directory we are coming from was moved
+    int newIdx = std::max(0, directoryController->findIdxOfEntry(oldDir));
     pager.setNumberOfElements(directoryController->getNumberOfEntries());
-    pager.focusScrolling();
+    pager.jumpToIdx(newIdx);
 }
 
 void Form::goIntoDirOrSetBackground() {
     if (directoryController->goIntoDirectory(pager.getSelection())) {
         pager.setNumberOfElements(directoryController->getNumberOfEntries());
-        pager.focusScrolling();
+        if (directoryHistory.count(directoryController->getWorkpath())) {
+            int newIdx = std::max(0, directoryController->
+                                  findIdxOfEntry(directoryHistory.at(directoryController->getWorkpath())));
+            pager.jumpToIdx(newIdx);
+        }
     }
     else {
         setBackground(BackgroundSetter::Mode::FILL);
