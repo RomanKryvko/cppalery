@@ -18,9 +18,9 @@ private:
     static constexpr inline char NO_IMAGE_IN_DIR_MSG[] = "No images of supported formats found in the directory.";
     const int BOTTOM_OFFSET = 4;
     const int IMG_DELAY = 200;
-    std::shared_ptr<MainWindow> mainWin;
-    std::shared_ptr<CommandWindow> commandWin;
-    std::shared_ptr<PreviewWindow> previewWin;
+    MainWindow mainWin;
+    CommandWindow commandWin;
+    PreviewWindow previewWin;
     std::shared_ptr<DirectoryController> directoryController;
     Pager pager;
     std::shared_ptr<Config> config;
