@@ -28,7 +28,7 @@ public:
 
     void resetSetup() override;
 
-    void printDirectoryContents(const Pager& pager, const std::shared_ptr<DirectoryController>& dirController);
+    void printDirectoryContents(const std::shared_ptr<Pager>& pager, const std::shared_ptr<DirectoryController>& dirController);
 };
 
 #endif

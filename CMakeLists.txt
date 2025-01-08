@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(cppalery VERSION 1.1.0)
+project(cppalery VERSION 1.1.1)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(cppalery)
 
 set(CPPALERY_SOURCES
+    "src/directoryPager.cpp"
     "src/keybindings.cpp"
     "src/pager.cpp"
     "src/directorySearcher.cpp"

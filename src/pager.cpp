@@ -75,7 +75,7 @@ void Pager::focusScrolling() {
         return;
     }
 
-    // Prevent blank space from appearing when focusing on entries at the bottom of directory
+    // Prevent blank space from appearing when focusing on entries at the bottom
     if (selection + height / 2 >= numberOfElements) {
         minDisplayedIdx = numberOfElements - height;
         return;

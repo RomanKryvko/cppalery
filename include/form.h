@@ -2,11 +2,11 @@
 #define FORM_H
 
 #include "directoryController.h"
+#include "directoryPager.h"
 #include "keybindings.h"
 #include "mainWindow.h"
 #include "commandWindow.h"
 #include "backgroundSetter.h"
-#include "pager.h"
 #include "previewWindow.h"
 #include "config.h"
 #include <map>
@@ -23,7 +23,7 @@ private:
     CommandWindow commandWin;
     PreviewWindow previewWin;
     std::shared_ptr<DirectoryController> directoryController;
-    Pager pager;
+    std::shared_ptr<DirectoryPager> pager;
     std::shared_ptr<Config> config;
     BackgroundSetter backSetter;
     std::map<fs::path, fs::path> directoryHistory;
@@ -31,13 +31,13 @@ private:
     int maxCols;
 
     Keybindings keybindings = Keybindings({
-        {{'g', 'g'}, std::bind(&Pager::jumpToTop, &pager)},
-        {{'G'}, std::bind(&Pager::jumpToBottom, &pager)},
-        {{'z', 'z'}, std::bind(&Pager::focusScrolling, &pager)},
-        {{KEY_UP}, std::bind(&Pager::scrollUp, &pager)},
-        {{'k'}, std::bind(&Pager::scrollUp, &pager)},
-        {{KEY_DOWN}, std::bind(&Pager::scrollDown, &pager)},
-        {{'j'}, std::bind(&Pager::scrollDown, &pager)},
+        {{'g', 'g'}, [this]() { pager->jumpToTop(); }},
+        {{'G'}, [this]() { pager->jumpToBottom(); }},
+        {{'z', 'z'}, [this]() { pager->focusScrolling();}},
+        {{KEY_UP}, [this]() { pager->scrollUp();}},
+        {{'k'}, [this]() { pager->scrollUp();}},
+        {{KEY_DOWN}, [this]() { pager->scrollDown();}},
+        {{'j'}, [this]() { pager->scrollDown();}},
         {{KEY_RESIZE}, std::bind(&Form::resize, this)},
         {{KEY_LEFT}, std::bind(&Form::goUpDir, this)},
         {{'h'}, std::bind(&Form::goUpDir, this)},

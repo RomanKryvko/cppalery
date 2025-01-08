@@ -2,11 +2,12 @@
 
 DirectoryController::DirectoryController() = default;
 
-DirectoryController::DirectoryController(const fs::path workpath, bool hideDots, bool sortAscending, bool useRelativePath) :
+DirectoryController::DirectoryController(const fs::path workpath, bool hideDots, bool sortAscending, bool useRelativePath, const std::shared_ptr<IDirectoryObserver>& observer) :
     directory(workpath),
     hideDots(hideDots),
     sortInAscendingOrder(sortAscending),
-    useRelativePath(useRelativePath)
+    useRelativePath(useRelativePath),
+    observer(observer)
 {
     homePath = fs::canonical(getenv("HOME"));
     doFullDirectorySetup();
@@ -26,6 +27,7 @@ DirectoryController& DirectoryController::operator=(const DirectoryController& o
 void DirectoryController::copyFromOther(const DirectoryController& other) {
     directory = other.directory;
     directorySearcher = other.directorySearcher;
+    observer = other.observer;
     shownEntries = other.shownEntries;
     homePath = other.homePath;
     directoryName = other.directoryName;
@@ -39,6 +41,7 @@ void DirectoryController::doFullDirectorySetup() {
     refreshShownEntries();
     formatShownEntries();
     clearSearchResults();
+    observer->onDirectoryChanged(this);
 }
 
 void DirectoryController::setDirectoryName() {
@@ -56,6 +59,8 @@ void DirectoryController::refreshShownEntries() {
     for (int i = 0; i < directory.size(); i++) {
         shownEntries[i] = &directory.getEntries()[i];
     }
+
+    observer->onDirectoryEntriesChanged(this);
 }
 
 void DirectoryController::formatShownEntries() {
@@ -82,6 +87,8 @@ void DirectoryController::hideDotEntries() {
             ++it;
         }
     }
+
+    observer->onDirectoryEntriesChanged(this);
 }
 
 void DirectoryController::sortByAscending() {

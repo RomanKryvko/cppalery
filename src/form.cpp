@@ -9,9 +9,9 @@ Form::Form(const std::shared_ptr<Config> &config) : config(config) {
     keypad(stdscr, TRUE);
     curs_set(0);
     getmaxyx(stdscr, maxRows, maxCols);
-    directoryController = std::make_shared<DirectoryController>(config->getPath(), true, config->sortByNameAscending, config->isPathRelative);
+    pager = std::make_shared<DirectoryPager>(maxRows - BOTTOM_OFFSET - 2, 0);
+    directoryController = std::make_shared<DirectoryController>(config->getPath(), true, config->sortByNameAscending, config->isPathRelative, pager);
     mainWin = MainWindow(maxRows - BOTTOM_OFFSET, maxCols - 1);
-    pager = Pager(maxRows - BOTTOM_OFFSET - 2, directoryController->getNumberOfEntries());
     commandWin = CommandWindow(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
     previewWin = PreviewWindow(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
     backSetter = BackgroundSetter(config->wallpaperFillCommand, config->wallpaperCenterCommand);
@@ -36,15 +36,15 @@ void Form::resize() {
     mainWin.resize(maxRows - BOTTOM_OFFSET, maxCols - 1); 
     commandWin.move(1, maxCols, maxRows - BOTTOM_OFFSET + 1, 1);
     previewWin.move(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
-    pager.setHeight(maxRows - BOTTOM_OFFSET - 2);
-    pager.focusScrolling();
+    pager->setHeight(maxRows - BOTTOM_OFFSET - 2);
+    pager->focusScrolling();
     refresh();
 }
 
 void Form::renderImgPreview() {
-    if (directoryController->isAnImage(pager.getSelection())) {
+    if (directoryController->isAnImage(pager->getSelection())) {
         previewWin.resetSetup();
-        previewWin.renderImg(directoryController->getPathAt(pager.getSelection()).string(),
+        previewWin.renderImg(directoryController->getPathAt(pager->getSelection()).string(),
                               maxRows - BOTTOM_OFFSET - 4, maxCols / 2 - 4, maxCols / 2 + 1, 3);
     }
     else if (previewWin.isUeberzugRunning) {
@@ -53,13 +53,13 @@ void Form::renderImgPreview() {
 }
 
 void Form::setBackground(BackgroundSetter::Mode mode) {
-    if (directoryController->isAnImage(pager.getSelection())) {
-        backSetter.setBackground(directoryController->getPathAt(pager.getSelection()).string(), mode);
+    if (directoryController->isAnImage(pager->getSelection())) {
+        backSetter.setBackground(directoryController->getPathAt(pager->getSelection()).string(), mode);
     }
 }
 
 void Form::setBackground(const fs::path& imagePath, BackgroundSetter::Mode mode) {
-    if (directoryController->isAnImage(pager.getSelection())) {
+    if (directoryController->isAnImage(pager->getSelection())) {
         backSetter.setBackground(imagePath.string(), mode);
     }
 }
@@ -93,8 +93,8 @@ void Form::run() {
 
 void Form::printWindows() {
     mainWin.printDirectoryContents(pager, directoryController);
-    commandWin.printStatus(pager.getSelection() + 1, directoryController->getNumberOfEntries());
-    if (config->showPreview && directoryController->isAnImage(pager.getSelection())) {
+    commandWin.printStatus(pager->getSelection() + 1, directoryController->getNumberOfEntries());
+    if (config->showPreview && directoryController->isAnImage(pager->getSelection())) {
         previewWin.resetSetup();
     }
 }
@@ -110,33 +110,18 @@ void Form::printInitialSetup() {
         directoryController->toggleRelativePath();
     }
     mainWin.printDirectoryContents(pager, directoryController);
-    commandWin.printStatus(pager.getSelection() + 1, directoryController->getNumberOfEntries());
+    commandWin.printStatus(pager->getSelection() + 1, directoryController->getNumberOfEntries());
     if (config->showPreview)
         renderImgPreview();
 }
 
 void Form::goUpDir() {
-    fs::path oldDir = directoryController->getWorkpath();
-    directoryHistory[oldDir] = directoryController->getPathAt(pager.getSelection());
     directoryController->goUpDirectory();
-    //NOTE: this check is redundant, unless the directory we are coming from was moved
-    int newIdx = std::max(0, directoryController->findIdxOfEntry(oldDir));
-    pager.setNumberOfElements(directoryController->getNumberOfEntries());
-    pager.jumpToIdx(newIdx);
 }
 
 void Form::goIntoDirOrSetBackground() {
-    if (directoryController->goIntoDirectory(pager.getSelection())) {
-        pager.setNumberOfElements(directoryController->getNumberOfEntries());
-        int newIdx = 0;
-        if (directoryHistory.count(directoryController->getWorkpath())) {
-            newIdx = std::max(newIdx, directoryController->
-                              findIdxOfEntry(directoryHistory.at(directoryController->getWorkpath())));
-        }
-        pager.jumpToIdx(newIdx);
-        return;
-    }
-    setBackground(BackgroundSetter::Mode::FILL);
+    if (!directoryController->goIntoDirectory(pager->getSelection()))
+        setBackground(BackgroundSetter::Mode::FILL);
 }
 
 void Form::setBackgroundCenter() {
@@ -149,8 +134,6 @@ void Form::setBackgroundFill() {
 
 void Form::toggleDotfiles() {
     directoryController->toggleDots();
-    pager.setNumberOfElements(directoryController->getNumberOfEntries());
-    pager.focusScrolling();
 }
 
 void Form::toggleRelativePath() {
@@ -176,7 +159,7 @@ void Form::initiateSearch() {
         searchResult = searchString + ": " + std::to_string(matches) + " match";
         if (matches > 1)
             searchResult += "es";
-        pager.jumpToIdx(directoryController->getFoundEntries()[0]);
+        pager->jumpToIdx(directoryController->getFoundEntries()[0]);
     }
 
     commandWin.info = searchResult;
@@ -201,7 +184,7 @@ void Form::loopResultsForward() {
     int foundEntry = directoryController->getNextFoundEntry();
     if (foundEntry >= 0) {
         commandWin.info = directoryController->getPathAt(foundEntry).filename().string();
-        pager.jumpToIdx(foundEntry);
+        pager->jumpToIdx(foundEntry);
     }
 }
 
@@ -209,7 +192,7 @@ void Form::loopResultsBackward() {
     int foundEntry = directoryController->getPreviousFoundEntry();
     if (foundEntry >= 0) {
         commandWin.info = directoryController->getPathAt(foundEntry).filename().string();
-        pager.jumpToIdx(foundEntry);
+        pager->jumpToIdx(foundEntry);
     }
 }
 

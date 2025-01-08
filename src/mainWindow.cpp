@@ -29,19 +29,19 @@ void MainWindow::resetSetup() {
     mvwprintw(window, 0, 5, " CPPalery ");
 }
 
-void MainWindow::printDirectoryContents(const Pager& pager, const std::shared_ptr<DirectoryController>& dirController) {
+void MainWindow::printDirectoryContents(const std::shared_ptr<Pager>& pager, const std::shared_ptr<DirectoryController>& dirController) {
     resetSetup();
-    int floor = std::min(pager.getMinDisplayedIdx() + height - 2, pager.getNumberOfElements());
+    int floor = std::min(pager->getMinDisplayedIdx() + height - 2, pager->getNumberOfElements());
 
-    std::string filesStr = std::string(" Entries total: ").append(std::to_string(pager.getNumberOfElements())).append(" ");
+    std::string filesStr = std::string(" Entries total: ").append(std::to_string(pager->getNumberOfElements())).append(" ");
     mvwprintw(window, height - 1, width - filesStr.length() - 2, "%s", filesStr.c_str());
 
     mvwprintw(window, 0, 20, "%s", dirController->getDirectoryName().c_str());
 
-    if (pager.getSelection() == 0) {
+    if (pager->getSelection() == 0) {
         mvwprintw(window, height - 1, 1, "TOP");
     }
-    if (pager.getSelection() == pager.getNumberOfElements() - 1) {
+    if (pager->getSelection() == pager->getNumberOfElements() - 1) {
         mvwprintw(window, height - 1, 1, "BOT");
     }
 
@@ -51,7 +51,7 @@ void MainWindow::printDirectoryContents(const Pager& pager, const std::shared_pt
         return;
     }
 
-    for (int i = pager.getMinDisplayedIdx(), j = 1; i < floor; i++, j++) {
+    for (int i = pager->getMinDisplayedIdx(), j = 1; i < floor; i++, j++) {
         const bool isSelectionAnImage = dirController->isAnImage(i);
         std::string entryStr = dirController->getPathAt(i).filename();
 
@@ -64,8 +64,8 @@ void MainWindow::printDirectoryContents(const Pager& pager, const std::shared_pt
 
         const char *entryCStr = entryStr.c_str();
 
-        if (i == pager.getSelection()) {
-            if (dirController->getEntryAt(pager.getSelection()).is_directory()) {
+        if (i == pager->getSelection()) {
+            if (dirController->getEntryAt(pager->getSelection()).is_directory()) {
                 printColoredString(entryCStr, j, 1, ColorPair::SelectedDirectory);
                 continue;
             }

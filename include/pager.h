@@ -2,7 +2,7 @@
 #define PAGER_H
 
 class Pager {
-private:
+protected:
     static constexpr int SCROLL_OFFSET = 2;
     int minDisplayedIdx;
     int height;

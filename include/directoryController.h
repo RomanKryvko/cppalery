@@ -1,18 +1,22 @@
 #ifndef DIRECTORY_CONTROLLER_H
 #define DIRECTORY_CONTROLLER_H
 
+#include "IDirectoryObserver.h"
 #include "directory.h"
 #include "directorySearcher.h"
+#include "IDirectoryController.h"
 #include <filesystem>
+#include <memory>
 #include <vector>
 
 namespace fs = std::filesystem;
 
-class DirectoryController {
+class DirectoryController : public IDirectoryController {
 private:
     Directory directory;
     DirectorySearcher directorySearcher;
     std::vector<const fs::directory_entry*> shownEntries;
+    std::shared_ptr<IDirectoryObserver> observer;
     fs::path homePath;
     std::string directoryName;
     bool hideDots;
@@ -52,7 +56,7 @@ public:
         return count(imgExtensions.begin(), imgExtensions.end(), path.extension());
     }
 
-    DirectoryController(const fs::path workpath, bool hideDots, bool sortAscending, bool useRelativePath);
+    DirectoryController(const fs::path workpath, bool hideDots, bool sortAscending, bool useRelativePath, const std::shared_ptr<IDirectoryObserver>& observer);
     DirectoryController();
     DirectoryController(const DirectoryController& other);
     DirectoryController& operator=(const DirectoryController& other);
@@ -69,14 +73,15 @@ public:
     int getNextFoundEntry();
     int getPreviousFoundEntry();
 
+    virtual int findIdxOfEntry(const fs::path &path) const override;
+    virtual int getNumberOfEntries() const override;
+    virtual const fs::path& getWorkpath() const override;
+
     const std::vector<int>& getFoundEntries() const;
-    int getNumberOfEntries() const;
     const std::string& getDirectoryName() const;
-    const fs::path& getWorkpath() const;
-    const fs::path& getPathAt(int idx) const;
+    virtual const fs::path& getPathAt(int idx) const override;
     const fs::directory_entry& getEntryAt(int idx) const;
     const std::vector<const fs::directory_entry*>& getAllEntries() const;
-    int findIdxOfEntry(const fs::path &path) const;
 
     bool inFoundEntries(int idx) const;
 
