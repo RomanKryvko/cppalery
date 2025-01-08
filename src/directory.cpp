@@ -13,7 +13,6 @@ Directory::Directory(const std::string &workPath) {
 
 Directory::Directory(const Directory& other) {
     contents = other.contents;
-    dirSize = other.dirSize;
     workPath = other.workPath;
 }
 
@@ -22,14 +21,13 @@ Directory& Directory::operator=(const Directory& other) {
         return *this;
 
     contents = other.contents;
-    dirSize = other.dirSize;
     workPath = other.workPath;
 
     return *this;
 }
 
 int Directory::size() const {
-    return dirSize;
+    return contents.size();
 }
 
 const std::vector<fs::directory_entry>& Directory::getEntries() const {
@@ -41,7 +39,7 @@ const fs::path& Directory::getWorkpath() const {
 }
 
 bool Directory::empty() const {
-    return dirSize <= 0;
+    return contents.empty();
 }
 
 void Directory::refreshDirectoryContents() {
@@ -50,5 +48,4 @@ void Directory::refreshDirectoryContents() {
         res.push_back(entry);
     }
     contents = res;
-    dirSize = res.size();
 }

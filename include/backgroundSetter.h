@@ -1,6 +1,6 @@
 #pragma once
 
-#include "directoryController.h"
+#include "IDirectoryController.h"
 #include "directoryPager.h"
 #include "messagePrinter.h"
 #include <memory>
@@ -14,7 +14,7 @@ private:
     std::string wallpaperCenter;
     std::string wallpaperFill;
     std::shared_ptr<DirectoryPager> pager;
-    std::shared_ptr<DirectoryController> directoryController;
+    std::shared_ptr<IDirectoryController> directoryController;
     std::shared_ptr<MessagePrinter> messagePrinter;
 
 public:
@@ -25,7 +25,7 @@ public:
 
     BackgroundSetter();
 
-    BackgroundSetter(const std::string& wallpaperCenter, const std::string& wallpaperFill, const std::shared_ptr<DirectoryPager>& pager, const std::shared_ptr<DirectoryController>& directoryController, const std::shared_ptr<MessagePrinter>& messagePrinter);
+    BackgroundSetter(const std::string& wallpaperCenter, const std::string& wallpaperFill, const std::shared_ptr<DirectoryPager>& pager, const std::shared_ptr<IDirectoryController>& directoryController, const std::shared_ptr<MessagePrinter>& messagePrinter);
 
     void setRandomBackground() const;
 

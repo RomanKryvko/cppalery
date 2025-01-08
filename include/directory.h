@@ -1,17 +1,17 @@
 #pragma once
 
+#include <array>
 #include <vector>
 #include <filesystem>
 #include <string>
 
 namespace fs = std::filesystem;
 
-const std::vector<std::string> imgExtensions = {".jpg", ".webp", ".png", ".gif", ".jpeg"};
+const std::array<const char*, 5> IMG_EXTENSIONS = {".jpg", ".webp", ".png", ".gif", ".jpeg"};
 
 class Directory {
 private:
     std::vector<fs::directory_entry> contents;
-    int dirSize;
     fs::path workPath;
 
 public:

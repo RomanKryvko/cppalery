@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IDirectoryObserver.h"
+#include "backgroundSetter.h"
 #include "directory.h"
 #include "directorySearcher.h"
 #include "IDirectoryController.h"
@@ -18,6 +19,7 @@ private:
     std::vector<const fs::directory_entry*> shownEntries;
     std::shared_ptr<IDirectoryObserver> observer;
     std::shared_ptr<MessagePrinter> messagePrinter;
+    std::shared_ptr<BackgroundSetter> backSetter;
     fs::path homePath;
     std::string directoryName;
     bool hideDots;
@@ -54,7 +56,7 @@ private:
 
 public:
     static bool isAnImage(const fs::path& path) {
-        return count(imgExtensions.begin(), imgExtensions.end(), path.extension());
+        return std::count(IMG_EXTENSIONS.begin(), IMG_EXTENSIONS.end(), path.extension());
     }
 
     DirectoryController(const fs::path workpath, bool hideDots, bool sortAscending, bool useRelativePath, const std::shared_ptr<IDirectoryObserver>& observer, const std::shared_ptr<MessagePrinter>& messagePrinter);
@@ -62,7 +64,9 @@ public:
     DirectoryController(const DirectoryController& other);
     DirectoryController& operator=(const DirectoryController& other);
 
-    bool goIntoDirectory(int idx);
+    void setBackgroundSetter(const std::shared_ptr<BackgroundSetter>& backgroundSetter);
+
+    void goIntoDirectory(int idx);
     void goUpDirectory();
 
     void toggleDots();
@@ -77,17 +81,17 @@ public:
     virtual int findIdxOfEntry(const fs::path &path) const override;
     virtual int getNumberOfEntries() const override;
     virtual const fs::path& getWorkpath() const override;
+    virtual const fs::path& getPathAt(int idx) const override;
+
+    virtual bool isAnImage(int idx) const override;
+    virtual std::vector<fs::path> getAllImages() const override;
 
     const std::vector<int>& getFoundEntries() const;
     const std::string& getDirectoryName() const;
-    virtual const fs::path& getPathAt(int idx) const override;
     const fs::directory_entry& getEntryAt(int idx) const;
     const std::vector<const fs::directory_entry*>& getAllEntries() const;
 
     bool inFoundEntries(int idx) const;
-
-    bool isAnImage(int idx) const;
-    std::vector<fs::path> getAllImages() const;
 
     void clearSearchResults();
 };

@@ -1,4 +1,5 @@
 #include "form.h"
+#include "keybindings.h"
 
 Form::Form(const std::shared_ptr<Config> &config) : config(config) {
     initscr();
@@ -14,7 +15,8 @@ Form::Form(const std::shared_ptr<Config> &config) : config(config) {
     commandWin = std::make_shared<CommandWindow>(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
     previewWin = PreviewWindow(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
     directoryController = std::make_shared<DirectoryController>(config->getPath(), true, config->sortByNameAscending, config->isPathRelative, pager, commandWin);
-    backSetter = BackgroundSetter(config->wallpaperFillCommand, config->wallpaperCenterCommand, pager, directoryController, commandWin);
+    backSetter = std::make_shared<BackgroundSetter>(config->wallpaperFillCommand, config->wallpaperCenterCommand, pager, directoryController, commandWin);
+    directoryController->setBackgroundSetter(backSetter);
     refresh();
 }
 
@@ -55,9 +57,9 @@ void Form::renderImgPreview() {
 void Form::run() {
     printInitialSetup();
 
-    short ch;
+    short ch = -1;
 
-    while (true) {
+    while (ch != QUIT_CHAR) {
         timeout(IMG_DELAY);
         ch = getch();
         // Render image only if user spends more than IMG_DELAY on an entry
@@ -66,10 +68,6 @@ void Form::run() {
             if (config->showPreview)
                 renderImgPreview();
             ch = getch();
-        }
-
-        if (ch == QUIT_CHAR) {
-            break;
         }
 
         keybindings.handleKeyPress(ch);
@@ -102,8 +100,7 @@ void Form::printInitialSetup() {
 
 void Form::goIntoDirOrSetBackground() {
     //TODO: rewrite this
-    if (!directoryController->goIntoDirectory(pager->getSelection()))
-        backSetter.setCurrentEntryAsBackground();
+    directoryController->goIntoDirectory(pager->getSelection());
 }
 
 void Form::initiateSearch() {

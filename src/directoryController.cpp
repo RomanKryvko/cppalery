@@ -32,6 +32,7 @@ void DirectoryController::copyFromOther(const DirectoryController& other) {
     directorySearcher = other.directorySearcher;
     observer = other.observer;
     messagePrinter = other.messagePrinter;
+    backSetter = other.backSetter;
     shownEntries = other.shownEntries;
     homePath = other.homePath;
     directoryName = other.directoryName;
@@ -105,13 +106,14 @@ void DirectoryController::sortByDescending() {
     sortShownEntries();
 }
 
-bool DirectoryController::goIntoDirectory(int idx) {
+void DirectoryController::goIntoDirectory(int idx) {
     if (shownEntries.size() && shownEntries[idx]->is_directory()) {
         directory = Directory(fs::canonical(shownEntries[idx]->path()));
         doFullDirectorySetup();
-        return true;
+        return;
     }
-    return false;
+
+    backSetter->setBackground(shownEntries[idx]->path());
 }
 
 int DirectoryController::findIdxOfEntry(const fs::path& path) const {
@@ -124,13 +126,16 @@ int DirectoryController::findIdxOfEntry(const fs::path& path) const {
 }
 
 void DirectoryController::goUpDirectory() {
-    const fs::path directoryOfEntry = directory.getWorkpath();
     const fs::path* workpath = &directory.getWorkpath();
 
     if (workpath->has_parent_path()) {
         directory = Directory(fs::canonical(*workpath / ".."));
         doFullDirectorySetup();
     }
+}
+
+void DirectoryController::setBackgroundSetter(const std::shared_ptr<BackgroundSetter>& backgroundSetter) {
+    backSetter = backgroundSetter;
 }
 
 void DirectoryController::toggleDots() {
@@ -193,6 +198,7 @@ const fs::path& DirectoryController::getPathAt(int idx) const {
 const fs::directory_entry& DirectoryController::getEntryAt(int idx) const {
     return *shownEntries[idx];
 }
+
 const std::vector<const fs::directory_entry*>& DirectoryController::getAllEntries() const {
     return shownEntries;
 }

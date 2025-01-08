@@ -3,7 +3,7 @@
 
 BackgroundSetter::BackgroundSetter() = default;
 
-BackgroundSetter::BackgroundSetter(const std::string& wallpaperCenter, const std::string& wallpaperFill, const std::shared_ptr<DirectoryPager>& pager, const std::shared_ptr<DirectoryController>& directoryController, const std::shared_ptr<MessagePrinter>& messagePrinter) :
+BackgroundSetter::BackgroundSetter(const std::string& wallpaperCenter, const std::string& wallpaperFill, const std::shared_ptr<DirectoryPager>& pager, const std::shared_ptr<IDirectoryController>& directoryController, const std::shared_ptr<MessagePrinter>& messagePrinter) :
     wallpaperFill(wallpaperFill),
     wallpaperCenter(wallpaperCenter),
     pager(pager),

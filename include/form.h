@@ -23,7 +23,7 @@ private:
     std::shared_ptr<DirectoryController> directoryController;
     std::shared_ptr<DirectoryPager> pager;
     std::shared_ptr<Config> config;
-    BackgroundSetter backSetter;
+    std::shared_ptr<BackgroundSetter> backSetter;
     std::map<fs::path, fs::path> directoryHistory;
     int maxRows;
     int maxCols;
@@ -43,8 +43,8 @@ private:
         {{'l'}, std::bind(&Form::goIntoDirOrSetBackground, this)},
         {{KEY_ENTER}, std::bind(&Form::goIntoDirOrSetBackground, this)},
         {{KEY_ENTER_ALT}, std::bind(&Form::goIntoDirOrSetBackground, this)},
-        {{'c'}, [this]() { backSetter.setCurrentEntryAsBackground(BackgroundSetter::Mode::CENTER); }},
-        {{'f'}, [this]() { backSetter.setCurrentEntryAsBackground(BackgroundSetter::Mode::FILL); }},
+        {{'c'}, [this]() { backSetter->setCurrentEntryAsBackground(BackgroundSetter::Mode::CENTER); }},
+        {{'f'}, [this]() { backSetter->setCurrentEntryAsBackground(BackgroundSetter::Mode::FILL); }},
         {{'H'}, [this]() { directoryController->toggleDots(); }},
         {{'p'}, [this]() { directoryController->toggleRelativePath(); }},
         {{'a'}, [this]() { directoryController->sortByAscending(); }},
@@ -54,7 +54,7 @@ private:
         {{KEY_ESC}, [this]() { directoryController->clearSearchResults(); }},
         {{'n'}, [this]() { directoryController->chooseNextFoundEntry(); }},
         {{'N'}, [this]() { directoryController->choosePreviousFoundEntry(); }},
-        {{'r'}, [this]() { backSetter.setRandomBackground(); }}
+        {{'r'}, [this]() { backSetter->setRandomBackground(); }}
     });
 
     void goIntoDirOrSetBackground();
