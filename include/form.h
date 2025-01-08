@@ -17,8 +17,8 @@ namespace fs = std::filesystem;
 class Form {
 private:
     static constexpr inline char NO_IMAGE_IN_DIR_MSG[] = "No images of supported formats found in the directory.";
-    const int BOTTOM_OFFSET = 4;
-    const int IMG_DELAY = 200;
+    static constexpr int BOTTOM_OFFSET = 4;
+    static constexpr int IMG_DELAY = 200;
     MainWindow mainWin;
     CommandWindow commandWin;
     PreviewWindow previewWin;

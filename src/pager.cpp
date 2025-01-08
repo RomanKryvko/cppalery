@@ -63,7 +63,10 @@ void Pager::jumpToIdx(int idx) {
     if (idx >= 0 && idx < numberOfElements) {
         selection = idx;
         focusScrolling();
+        return;
     }
+    selection = 0;
+    minDisplayedIdx = 0;
 }
 
 void Pager::focusScrolling() {

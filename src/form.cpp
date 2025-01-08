@@ -67,7 +67,7 @@ void Form::setBackground(const fs::path& imagePath, BackgroundSetter::Mode mode)
 void Form::run() {
     printInitialSetup();
 
-    int ch;
+    short ch;
 
     while (true) {
         commandWin.info = "";
@@ -128,13 +128,12 @@ void Form::goUpDir() {
 void Form::goIntoDirOrSetBackground() {
     if (directoryController->goIntoDirectory(pager.getSelection())) {
         pager.setNumberOfElements(directoryController->getNumberOfEntries());
+        int newIdx = 0;
         if (directoryHistory.count(directoryController->getWorkpath())) {
-            int newIdx = std::max(0, directoryController->
-                                  findIdxOfEntry(directoryHistory.at(directoryController->getWorkpath())));
-            pager.jumpToIdx(newIdx);
-            return;
+            newIdx = std::max(newIdx, directoryController->
+                              findIdxOfEntry(directoryHistory.at(directoryController->getWorkpath())));
         }
-        pager.jumpToTop();
+        pager.jumpToIdx(newIdx);
         return;
     }
     setBackground(BackgroundSetter::Mode::FILL);

@@ -28,7 +28,6 @@ void DirectoryController::copyFromOther(const DirectoryController& other) {
     directorySearcher = other.directorySearcher;
     shownEntries = other.shownEntries;
     homePath = other.homePath;
-    childDirectoryOfEntry = other.childDirectoryOfEntry;
     directoryName = other.directoryName;
     hideDots = other.hideDots;
     sortInAscendingOrder = other.sortInAscendingOrder;

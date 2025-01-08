@@ -14,7 +14,6 @@ private:
     DirectorySearcher directorySearcher;
     std::vector<const fs::directory_entry*> shownEntries;
     fs::path homePath;
-    fs::path childDirectoryOfEntry;
     std::string directoryName;
     bool hideDots;
     bool sortInAscendingOrder;
