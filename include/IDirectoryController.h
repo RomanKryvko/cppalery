@@ -1,5 +1,4 @@
-#ifndef IDIRECTORY_CONTROLLER_H
-#define IDIRECTORY_CONTROLLER_H
+#pragma once
 
 #include <filesystem>
 
@@ -10,5 +9,3 @@ public:
     virtual int findIdxOfEntry(const std::filesystem::path& entry) const = 0;
     virtual int getNumberOfEntries() const = 0;
 };
-
-#endif

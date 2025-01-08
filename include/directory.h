@@ -1,5 +1,4 @@
-#ifndef DIRECTORY_H
-#define DIRECTORY_H
+#pragma once
 
 #include <vector>
 #include <filesystem>
@@ -34,5 +33,3 @@ public:
 
     void refreshDirectoryContents();
 };
-
-#endif

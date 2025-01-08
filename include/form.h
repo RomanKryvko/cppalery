@@ -1,5 +1,4 @@
-#ifndef FORM_H
-#define FORM_H
+#pragma once
 
 #include "directoryController.h"
 #include "directoryPager.h"
@@ -94,5 +93,3 @@ public:
 
     void run();
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -53,5 +52,3 @@ class Config {
 
         bool parseConfig(std::string configPath = CONFIG_PATH);
 };
-
-#endif

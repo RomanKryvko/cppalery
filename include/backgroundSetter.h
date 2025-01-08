@@ -1,5 +1,4 @@
-#ifndef BACKGROUND_SETTER_H
-#define BACKGROUND_SETTER_H
+#pragma once
 
 #include <string>
 #include <cstdlib>
@@ -24,5 +23,3 @@ class BackgroundSetter {
         void setBackground(const std::string &fileName, BackgroundSetter::Mode mode = BackgroundSetter::Mode::FILL);
 
 };
-
-#endif

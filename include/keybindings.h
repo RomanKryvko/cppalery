@@ -1,5 +1,4 @@
-#ifndef KEYBINDINGS_H
-#define KEYBINDINGS_H
+#pragma once
 
 #include <deque>
 #include <functional>
@@ -26,5 +25,3 @@ private:
     std::deque<char> currentKeys;
     static constexpr size_t maxKeySequenceLength = 3;
 };
-
-#endif

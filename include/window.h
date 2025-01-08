@@ -1,5 +1,5 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#pragma once
+
 #include <ncurses.h>
 
 class Window {
@@ -23,5 +23,3 @@ class Window {
 
         virtual void resize(int newHeight, int newWidth);
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef PREVIEW_WINDOW_H
-#define PREVIEW_WINDOW_H
+#pragma once
 
 #include "directory.h"
 #include "window.h"
@@ -33,5 +32,3 @@ class PreviewWindow : public Window {
 
         void terminateImgPreview();
 };
-
-#endif

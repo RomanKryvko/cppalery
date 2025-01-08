@@ -1,5 +1,4 @@
-#ifndef COMMAND_WINDOW_H
-#define COMMAND_WINDOW_H
+#pragma once
 
 #include <string>
 #include "window.h"
@@ -25,5 +24,3 @@ class CommandWindow : public Window {
 
         void printHelp();
 };
-
-#endif

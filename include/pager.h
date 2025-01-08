@@ -1,5 +1,4 @@
-#ifndef PAGER_H
-#define PAGER_H
+#pragma once
 
 class Pager {
 protected:
@@ -26,5 +25,3 @@ public:
     int getMinDisplayedIdx() const;
     int getNumberOfElements() const;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef DIRECTORY_SEARCHER_H
-#define DIRECTORY_SEARCHER_H
+#pragma once
 
 #include <algorithm>
 #include <filesystem>
@@ -29,5 +28,3 @@ public:
     int findString(const std::vector<const std::filesystem::directory_entry*>& directoryEntries);
     void clearSearchResults();
 };
-
-#endif

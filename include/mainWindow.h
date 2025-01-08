@@ -1,5 +1,4 @@
-#ifndef MAIN_WINDOW_H
-#define MAIN_WINDOW_H
+#pragma once
 
 #include "directoryController.h"
 #include "pager.h"
@@ -30,5 +29,3 @@ public:
 
     void printDirectoryContents(const std::shared_ptr<Pager>& pager, const std::shared_ptr<DirectoryController>& dirController);
 };
-
-#endif

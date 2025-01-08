@@ -1,5 +1,4 @@
-#ifndef DIRECTORY_PAGER_H
-#define DIRECTOTY_PAGER_H
+#pragma once
 
 #include "pager.h"
 #include <map>
@@ -21,5 +20,3 @@ public:
 private:
     PathMap directoryHistory;
 };
-
-#endif

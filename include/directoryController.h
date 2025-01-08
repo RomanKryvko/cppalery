@@ -1,5 +1,4 @@
-#ifndef DIRECTORY_CONTROLLER_H
-#define DIRECTORY_CONTROLLER_H
+#pragma once
 
 #include "IDirectoryObserver.h"
 #include "directory.h"
@@ -90,5 +89,3 @@ public:
 
     void clearSearchResults();
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef COLORS_H
-#define COLORS_H
+#pragma once
 
 #include <ncurses.h>
 
@@ -38,4 +37,3 @@ class TermColor {
             this->foreground = foreground;
         }
 };
-#endif
