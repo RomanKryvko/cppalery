@@ -7,11 +7,15 @@
 CommandWindow::CommandWindow() = default;
 
 CommandWindow::CommandWindow(int height, int width, int startX, int startY) : Window(height, width) {
-    this->window = newwin(height, width, startX, startY);
+    window = newwin(height, width, startX, startY);
 }
 
 void CommandWindow::resetSetup() {
     werase(window);
+}
+
+void CommandWindow::setMessage(const std::string& msg) {
+    message = msg;
 }
 
 void CommandWindow::move(int newHeight, int newWidth, int startY, int startX) {
@@ -23,19 +27,19 @@ void CommandWindow::move(int newHeight, int newWidth, int startY, int startX) {
 }
 
 void CommandWindow::resize(int newHeight, int newWidth) {
-    this->width = newWidth;
-    this->height = newHeight;
+    width = newWidth;
+    height = newHeight;
 }
 
 void CommandWindow::printStatus(int position, int total) {
     resetSetup();
-    mvwprintw(window, 0, 1, "%s", info.c_str());
+    mvwprintw(window, 0, 1, "%s", message.c_str());
     if (total != 0) {
         int percent = position * 100 / total;
         std::ostringstream oss;
-        oss << position << "/" << total << std::setw(STATUS_RULER_OFFSET) << percent << "%";
+        oss << position << "/" << total << std::setw(STATUS_RULER_GAP) << percent << "%";
         std::string posString = oss.str();
-        mvwprintw(window, 0, width - posString.length(), "%s", posString.c_str());
+        mvwprintw(window, 0, width - posString.length() - STATUS_RULER_OFFSET, "%s", posString.c_str());
     }
     wrefresh(window);
 }
@@ -76,13 +80,13 @@ void CommandWindow::printHelp() {
 
     std::string keysHeader = "key(s)";
     helpStr.append(keysHeader).append(maxKeyWidth - keysHeader.length(), ' ').append(separator).append("command");
-    mvwprintw(window, j++, 2, helpStr.c_str());
+    mvwprintw(window, j++, 2, "%s", helpStr.c_str());
     helpStr = std::string(width - 3, '-');
-    mvwprintw(window, j++, 2, helpStr.c_str());
+    mvwprintw(window, j++, 2, "%s", helpStr.c_str());
 
     for (auto i : KeySemantics) {
         helpStr = i[0].append(maxKeyWidth - i[0].length(), ' ').append(separator).append(i[1]);
-        mvwprintw(window, j++, 2, helpStr.c_str());
+        mvwprintw(window, j++, 2, "%s", helpStr.c_str());
     }
     wrefresh(window);
 }
@@ -93,7 +97,7 @@ std::string CommandWindow::getSearchInput() {
     wrefresh(window);
     std::string str = "";
     int ch = getch();
-    mvwprintw(window, 0, 2, str.c_str());
+    mvwprintw(window, 0, 2, "%s", str.c_str());
     wrefresh(window);
     while (ch != KEY_ENTER_ALT && ch != KEY_ENTER) {
         if (ch == KEY_DC || ch == '\b' || ch == KEY_BACKSPACE || ch == KEY_BACKSPACE_ALT) {
@@ -112,7 +116,7 @@ std::string CommandWindow::getSearchInput() {
         }
         resetSetup();
         mvwprintw(window, 0, 1, "/");
-        mvwprintw(window, 0, 2, str.c_str());
+        mvwprintw(window, 0, 2, "%s", str.c_str());
         wrefresh(window);
         ch = getch();
     }

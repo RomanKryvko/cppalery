@@ -2,6 +2,7 @@
 
 #include "directoryController.h"
 #include "directoryPager.h"
+#include "messagePrinter.h"
 #include <memory>
 #include <string>
 
@@ -9,10 +10,12 @@ namespace fs = std::filesystem;
 
 class BackgroundSetter {
 private:
+    static constexpr inline char NO_IMAGE_IN_DIR_MSG[] = "No images of supported formats found in the directory.";
     std::string wallpaperCenter;
     std::string wallpaperFill;
     std::shared_ptr<DirectoryPager> pager;
     std::shared_ptr<DirectoryController> directoryController;
+    std::shared_ptr<MessagePrinter> messagePrinter;
 
 public:
     enum class Mode {
@@ -22,7 +25,7 @@ public:
 
     BackgroundSetter();
 
-    BackgroundSetter(const std::string& wallpaperCenter, const std::string& wallpaperFill, const std::shared_ptr<DirectoryPager>& pager, const std::shared_ptr<DirectoryController>& directoryController);
+    BackgroundSetter(const std::string& wallpaperCenter, const std::string& wallpaperFill, const std::shared_ptr<DirectoryPager>& pager, const std::shared_ptr<DirectoryController>& directoryController, const std::shared_ptr<MessagePrinter>& messagePrinter);
 
     void setRandomBackground() const;
 

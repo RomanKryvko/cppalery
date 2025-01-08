@@ -1,26 +1,30 @@
 #pragma once
 
 #include <string>
+#include "messagePrinter.h"
 #include "window.h"
 
-const int STATUS_RULER_OFFSET = 5;
+class CommandWindow : public Window, public MessagePrinter {
+private:
+    static constexpr int STATUS_RULER_OFFSET = 1;
+    static constexpr int STATUS_RULER_GAP = 4;
+    std::string message;
 
-class CommandWindow : public Window {
-    public:
-        CommandWindow();
-        CommandWindow(int height, int width, int startX, int startY);
+public:
+    CommandWindow();
+    CommandWindow(int height, int width, int startX, int startY);
 
-        std::string info;
+    virtual void setMessage(const std::string& msg) override;
 
-        void resetSetup() override;
+    void resetSetup() override;
 
-        void move(int newHeigth, int newWidth, int startX, int startY);
+    void move(int newHeigth, int newWidth, int startX, int startY);
 
-        void resize(int newHeight, int newWidth) override;
+    void resize(int newHeight, int newWidth) override;
 
-        void printStatus(int position, int total);
+    void printStatus(int position, int total);
 
-        std::string getSearchInput();
+    std::string getSearchInput();
 
-        void printHelp();
+    void printHelp();
 };

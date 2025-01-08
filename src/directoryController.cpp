@@ -1,13 +1,16 @@
 #include "directoryController.h"
+#include "directorySearcher.h"
 
 DirectoryController::DirectoryController() = default;
 
-DirectoryController::DirectoryController(const fs::path workpath, bool hideDots, bool sortAscending, bool useRelativePath, const std::shared_ptr<IDirectoryObserver>& observer) :
+DirectoryController::DirectoryController(const fs::path workpath, bool hideDots, bool sortAscending, bool useRelativePath, const std::shared_ptr<IDirectoryObserver>& observer, const std::shared_ptr<MessagePrinter>& messagePrinter) :
     directory(workpath),
     hideDots(hideDots),
     sortInAscendingOrder(sortAscending),
     useRelativePath(useRelativePath),
-    observer(observer)
+    observer(observer),
+    messagePrinter(messagePrinter),
+    directorySearcher(messagePrinter)
 {
     homePath = fs::canonical(getenv("HOME"));
     doFullDirectorySetup();
@@ -28,6 +31,7 @@ void DirectoryController::copyFromOther(const DirectoryController& other) {
     directory = other.directory;
     directorySearcher = other.directorySearcher;
     observer = other.observer;
+    messagePrinter = other.messagePrinter;
     shownEntries = other.shownEntries;
     homePath = other.homePath;
     directoryName = other.directoryName;
@@ -154,12 +158,20 @@ int DirectoryController::findAllEntriesInDirectory(const std::string searchTerm)
     return directorySearcher.findString(shownEntries);
 }
 
-int DirectoryController::getNextFoundEntry() {
-    return directorySearcher.chooseNext();
+void DirectoryController::chooseNextFoundEntry() {
+    int idx = directorySearcher.chooseNext();
+    if (idx >= 0) {
+        messagePrinter->setMessage(getPathAt(idx).filename());
+        observer->onSearchChange(idx);
+    }
 }
 
-int DirectoryController::getPreviousFoundEntry() {
-    return directorySearcher.choosePrevious();
+void DirectoryController::choosePreviousFoundEntry() {
+    int idx = directorySearcher.choosePrevious();
+    if (idx >= 0) {
+        messagePrinter->setMessage(getPathAt(idx).filename());
+        observer->onSearchChange(idx);
+    }
 }
 
 int DirectoryController::getNumberOfEntries() const {

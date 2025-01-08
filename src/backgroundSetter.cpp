@@ -3,11 +3,12 @@
 
 BackgroundSetter::BackgroundSetter() = default;
 
-BackgroundSetter::BackgroundSetter(const std::string& wallpaperCenter, const std::string& wallpaperFill, const std::shared_ptr<DirectoryPager>& pager, const std::shared_ptr<DirectoryController>& directoryController) :
+BackgroundSetter::BackgroundSetter(const std::string& wallpaperCenter, const std::string& wallpaperFill, const std::shared_ptr<DirectoryPager>& pager, const std::shared_ptr<DirectoryController>& directoryController, const std::shared_ptr<MessagePrinter>& messagePrinter) :
     wallpaperFill(wallpaperFill),
     wallpaperCenter(wallpaperCenter),
     pager(pager),
-    directoryController(directoryController)
+    directoryController(directoryController),
+    messagePrinter(messagePrinter)
 {}
 
 void BackgroundSetter::setRandomBackground() const {
@@ -16,11 +17,9 @@ void BackgroundSetter::setRandomBackground() const {
         srand(time(0));
         int idx = rand() % images.size();
         setBackground(images[idx]);
+        return;
     }
-    //TODO: implement message sending, e.g.
-    /*else {*/
-    /*    commandWin.info = NO_IMAGE_IN_DIR_MSG;*/
-    /*}*/
+    messagePrinter->setMessage(NO_IMAGE_IN_DIR_MSG);
 }
 
 void BackgroundSetter::setCurrentEntryAsBackground(BackgroundSetter::Mode mode) const {

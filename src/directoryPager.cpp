@@ -34,3 +34,7 @@ void DirectoryPager::onDirectoryEntriesChanged(const IDirectoryController* direc
     setNumberOfElements(directory->getNumberOfEntries());
     focusScrolling();
 }
+
+void DirectoryPager::onSearchChange(int idx) {
+    jumpToIdx(idx);
+}

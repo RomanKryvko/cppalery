@@ -4,6 +4,7 @@
 #include "directory.h"
 #include "directorySearcher.h"
 #include "IDirectoryController.h"
+#include "messagePrinter.h"
 #include <filesystem>
 #include <memory>
 #include <vector>
@@ -16,6 +17,7 @@ private:
     DirectorySearcher directorySearcher;
     std::vector<const fs::directory_entry*> shownEntries;
     std::shared_ptr<IDirectoryObserver> observer;
+    std::shared_ptr<MessagePrinter> messagePrinter;
     fs::path homePath;
     std::string directoryName;
     bool hideDots;
@@ -55,7 +57,7 @@ public:
         return count(imgExtensions.begin(), imgExtensions.end(), path.extension());
     }
 
-    DirectoryController(const fs::path workpath, bool hideDots, bool sortAscending, bool useRelativePath, const std::shared_ptr<IDirectoryObserver>& observer);
+    DirectoryController(const fs::path workpath, bool hideDots, bool sortAscending, bool useRelativePath, const std::shared_ptr<IDirectoryObserver>& observer, const std::shared_ptr<MessagePrinter>& messagePrinter);
     DirectoryController();
     DirectoryController(const DirectoryController& other);
     DirectoryController& operator=(const DirectoryController& other);
@@ -69,8 +71,8 @@ public:
     void sortByDescending();
 
     int findAllEntriesInDirectory(const std::string searchTerm);
-    int getNextFoundEntry();
-    int getPreviousFoundEntry();
+    void chooseNextFoundEntry();
+    void choosePreviousFoundEntry();
 
     virtual int findIdxOfEntry(const fs::path &path) const override;
     virtual int getNumberOfEntries() const override;

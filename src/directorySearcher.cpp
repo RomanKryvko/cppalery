@@ -2,10 +2,36 @@
 
 DirectorySearcher::DirectorySearcher() = default;
 
+DirectorySearcher::DirectorySearcher(const std::shared_ptr<MessagePrinter>& messagePrinter) :
+    messagePrinter(messagePrinter)
+{}
+
+DirectorySearcher::DirectorySearcher(const DirectorySearcher& other) {
+    copyFromOther(other);
+}
+
+DirectorySearcher& DirectorySearcher::operator=(const DirectorySearcher& other) {
+    if (this == &other) 
+        return *this;
+
+    copyFromOther(other);
+    return *this;
+}
+
+void DirectorySearcher::copyFromOther(const DirectorySearcher& other) {
+    messagePrinter = other.messagePrinter;
+    searchTerm = other.searchTerm;
+    foundEntries = other.foundEntries;
+    chosenEntryIdx = other.chosenEntryIdx;
+}
+
 int DirectorySearcher::chooseNext() {
     if (!foundEntries.empty()) {
         if (chosenEntryIdx == foundEntries.size() - 1) {
-            //TODO: implement sending message on wrappping
+            //TODO: this actually doesn't do anything at the moment,
+            // as the message is overwritten while looping through foundEntries in DirectoryController.
+            // This needs to be fixed
+            messagePrinter->setMessage("Search hit BOTTOM, continuing at TOP");
             chosenEntryIdx = 0;
             return foundEntries[chosenEntryIdx];
         }
@@ -18,7 +44,10 @@ int DirectorySearcher::chooseNext() {
 int DirectorySearcher::choosePrevious() {
     if (!foundEntries.empty()) {
         if (!chosenEntryIdx) {
-            //TODO: implement sending message on wrappping
+            //TODO: this actually doesn't do anything at the moment,
+            // as the message is overwritten while looping through foundEntries in DirectoryController.
+            // This needs to be fixed
+            messagePrinter->setMessage("Search hit TOP, continuing at BOTTOM");
             chosenEntryIdx = foundEntries.size() - 1;
             return foundEntries[chosenEntryIdx];
         }
@@ -40,9 +69,6 @@ int DirectorySearcher::findString(const std::vector<const std::filesystem::direc
             if (inString(directoryEntries[i]->path().filename().string(), searchTerm))
                 foundEntries.push_back(i);
         }
-
-        if (!foundEntries.empty())
-            chosenEntryIdx = 0;
 
         return foundEntries.size();
     }

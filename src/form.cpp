@@ -10,11 +10,11 @@ Form::Form(const std::shared_ptr<Config> &config) : config(config) {
     curs_set(0);
     getmaxyx(stdscr, maxRows, maxCols);
     pager = std::make_shared<DirectoryPager>(maxRows - BOTTOM_OFFSET - 2, 0);
-    directoryController = std::make_shared<DirectoryController>(config->getPath(), true, config->sortByNameAscending, config->isPathRelative, pager);
     mainWin = MainWindow(maxRows - BOTTOM_OFFSET, maxCols - 1);
-    commandWin = CommandWindow(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
+    commandWin = std::make_shared<CommandWindow>(1, maxCols - 1, maxRows - BOTTOM_OFFSET + 1, 1);
     previewWin = PreviewWindow(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
-    backSetter = BackgroundSetter(config->wallpaperFillCommand, config->wallpaperCenterCommand, pager, directoryController);
+    directoryController = std::make_shared<DirectoryController>(config->getPath(), true, config->sortByNameAscending, config->isPathRelative, pager, commandWin);
+    backSetter = BackgroundSetter(config->wallpaperFillCommand, config->wallpaperCenterCommand, pager, directoryController, commandWin);
     refresh();
 }
 
@@ -34,7 +34,7 @@ void Form::resize() {
     erase();
     getmaxyx(stdscr, maxRows, maxCols);
     mainWin.resize(maxRows - BOTTOM_OFFSET, maxCols - 1); 
-    commandWin.move(1, maxCols, maxRows - BOTTOM_OFFSET + 1, 1);
+    commandWin->move(1, maxCols, maxRows - BOTTOM_OFFSET + 1, 1);
     previewWin.move(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
     pager->setHeight(maxRows - BOTTOM_OFFSET - 2);
     pager->focusScrolling();
@@ -58,7 +58,6 @@ void Form::run() {
     short ch;
 
     while (true) {
-        commandWin.info = "";
         timeout(IMG_DELAY);
         ch = getch();
         // Render image only if user spends more than IMG_DELAY on an entry
@@ -81,7 +80,7 @@ void Form::run() {
 
 void Form::printWindows() {
     mainWin.printDirectoryContents(pager, directoryController);
-    commandWin.printStatus(pager->getSelection() + 1, directoryController->getNumberOfEntries());
+    commandWin->printStatus(pager->getSelection() + 1, directoryController->getNumberOfEntries());
     if (config->showPreview && directoryController->isAnImage(pager->getSelection())) {
         previewWin.resetSetup();
     }
@@ -98,16 +97,17 @@ void Form::printInitialSetup() {
         directoryController->toggleRelativePath();
     }
     mainWin.printDirectoryContents(pager, directoryController);
-    commandWin.printStatus(pager->getSelection() + 1, directoryController->getNumberOfEntries());
+    commandWin->printStatus(pager->getSelection() + 1, directoryController->getNumberOfEntries());
 }
 
 void Form::goIntoDirOrSetBackground() {
+    //TODO: rewrite this
     if (!directoryController->goIntoDirectory(pager->getSelection()))
-        backSetter.setBackground(directoryController->getPathAt(pager->getSelection()), BackgroundSetter::Mode::FILL);
+        backSetter.setCurrentEntryAsBackground();
 }
 
 void Form::initiateSearch() {
-    std::string searchString = commandWin.getSearchInput();
+    std::string searchString = commandWin->getSearchInput();
     int matches = directoryController->findAllEntriesInDirectory(searchString);
     std::string searchResult;
     if (matches == 0) {
@@ -117,35 +117,19 @@ void Form::initiateSearch() {
         searchResult = searchString + ": " + std::to_string(matches) + " match";
         if (matches > 1)
             searchResult += "es";
-        pager->jumpToIdx(directoryController->getFoundEntries()[0]);
+        directoryController->chooseNextFoundEntry();
     }
 
-    commandWin.info = searchResult;
+    commandWin->setMessage(searchResult);
 }
 
 void Form::printHelp() {
     if (previewWin.isUeberzugRunning) {
         previewWin.terminateImgPreview();
     }
-    commandWin.move(maxRows - BOTTOM_OFFSET, maxCols - 3, BOTTOM_OFFSET, 2);
-    commandWin.printHelp();
+    commandWin->move(maxRows - BOTTOM_OFFSET, maxCols - 3, BOTTOM_OFFSET, 2);
+    commandWin->printHelp();
     getch();
     //reset the form entirely to prevent artifacts from appearing
     resize();
-}
-
-void Form::loopResultsForward() {
-    int foundEntry = directoryController->getNextFoundEntry();
-    if (foundEntry >= 0) {
-        commandWin.info = directoryController->getPathAt(foundEntry).filename().string();
-        pager->jumpToIdx(foundEntry);
-    }
-}
-
-void Form::loopResultsBackward() {
-    int foundEntry = directoryController->getPreviousFoundEntry();
-    if (foundEntry >= 0) {
-        commandWin.info = directoryController->getPathAt(foundEntry).filename().string();
-        pager->jumpToIdx(foundEntry);
-    }
 }

@@ -15,11 +15,10 @@ namespace fs = std::filesystem;
 
 class Form {
 private:
-    static constexpr inline char NO_IMAGE_IN_DIR_MSG[] = "No images of supported formats found in the directory.";
     static constexpr int BOTTOM_OFFSET = 4;
     static constexpr int IMG_DELAY = 200;
     MainWindow mainWin;
-    CommandWindow commandWin;
+    std::shared_ptr<CommandWindow> commandWin;
     PreviewWindow previewWin;
     std::shared_ptr<DirectoryController> directoryController;
     std::shared_ptr<DirectoryPager> pager;
@@ -53,16 +52,14 @@ private:
         {{'/'}, std::bind(&Form::initiateSearch, this)},
         {{'?'}, std::bind(&Form::printHelp, this)},
         {{KEY_ESC}, [this]() { directoryController->clearSearchResults(); }},
-        {{'n'}, std::bind(&Form::loopResultsForward, this)},
-        {{'N'}, std::bind(&Form::loopResultsBackward, this)},
+        {{'n'}, [this]() { directoryController->chooseNextFoundEntry(); }},
+        {{'N'}, [this]() { directoryController->choosePreviousFoundEntry(); }},
         {{'r'}, [this]() { backSetter.setRandomBackground(); }}
     });
 
     void goIntoDirOrSetBackground();
     void initiateSearch();
     void printHelp();
-    void loopResultsForward();
-    void loopResultsBackward();
 
     void initColors();
     void printWindows();

@@ -16,6 +16,7 @@ public:
 
     virtual void onDirectoryChanged(const IDirectoryController* directory) override;
     virtual void onDirectoryEntriesChanged(const IDirectoryController* directory) override;
+    virtual void onSearchChange(int idx) override;
 
 private:
     PathMap directoryHistory;
