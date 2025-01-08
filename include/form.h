@@ -38,41 +38,31 @@ private:
         {{KEY_DOWN}, [this]() { pager->scrollDown();}},
         {{'j'}, [this]() { pager->scrollDown();}},
         {{KEY_RESIZE}, std::bind(&Form::resize, this)},
-        {{KEY_LEFT}, std::bind(&Form::goUpDir, this)},
-        {{'h'}, std::bind(&Form::goUpDir, this)},
-        {{KEY_RESIZE}, std::bind(&Form::resize, this)},
+        {{KEY_LEFT}, [this]() { directoryController->goUpDirectory(); }},
+        {{'h'}, [this]() { directoryController->goUpDirectory(); }},
         {{KEY_RIGHT}, std::bind(&Form::goIntoDirOrSetBackground, this)},
         {{'l'}, std::bind(&Form::goIntoDirOrSetBackground, this)},
         {{KEY_ENTER}, std::bind(&Form::goIntoDirOrSetBackground, this)},
         {{KEY_ENTER_ALT}, std::bind(&Form::goIntoDirOrSetBackground, this)},
-        {{'c'}, std::bind(&Form::setBackgroundCenter, this)},
-        {{'f'}, std::bind(&Form::setBackgroundFill, this)},
-        {{'H'}, std::bind(&Form::toggleDotfiles, this)},
-        {{'p'}, std::bind(&Form::toggleRelativePath, this)},
-        {{'a'}, std::bind(&Form::sortByNameAscending, this)},
-        {{'d'}, std::bind(&Form::sortByNameDescending, this)},
+        {{'c'}, [this]() { backSetter.setCurrentEntryAsBackground(BackgroundSetter::Mode::CENTER); }},
+        {{'f'}, [this]() { backSetter.setCurrentEntryAsBackground(BackgroundSetter::Mode::FILL); }},
+        {{'H'}, [this]() { directoryController->toggleDots(); }},
+        {{'p'}, [this]() { directoryController->toggleRelativePath(); }},
+        {{'a'}, [this]() { directoryController->sortByAscending(); }},
+        {{'d'}, [this]() { directoryController->sortByDescending(); }},
         {{'/'}, std::bind(&Form::initiateSearch, this)},
         {{'?'}, std::bind(&Form::printHelp, this)},
-        {{KEY_ESC}, std::bind(&Form::clearSearchHighlights, this)},
+        {{KEY_ESC}, [this]() { directoryController->clearSearchResults(); }},
         {{'n'}, std::bind(&Form::loopResultsForward, this)},
         {{'N'}, std::bind(&Form::loopResultsBackward, this)},
-        {{'r'}, std::bind(&Form::setRandomBackground, this)}
+        {{'r'}, [this]() { backSetter.setRandomBackground(); }}
     });
 
-    void goUpDir();
     void goIntoDirOrSetBackground();
-    void setBackgroundCenter();
-    void setBackgroundFill();
-    void toggleDotfiles();
-    void toggleRelativePath();
-    void sortByNameAscending();
-    void sortByNameDescending();
     void initiateSearch();
     void printHelp();
-    void clearSearchHighlights();
     void loopResultsForward();
     void loopResultsBackward();
-    void setRandomBackground();
 
     void initColors();
     void printWindows();
@@ -86,10 +76,6 @@ public:
     void resize();
 
     void renderImgPreview();
-
-    void setBackground(BackgroundSetter::Mode mode);
-
-    void setBackground(const fs::path& imagePath, BackgroundSetter::Mode mode);
 
     void run();
 };
