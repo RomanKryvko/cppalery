@@ -8,7 +8,7 @@ void Keybindings::addBinding(const KeySequence& sequence, Action action) {
     bindings[sequence] = action;
 }
 
-void Keybindings::handleKeyPress(char key) {
+void Keybindings::handleKeyPress(Key key) {
     currentKeys.push_back(key);
     if (currentKeys.size() > maxKeySequenceLength) {
         currentKeys.pop_front();

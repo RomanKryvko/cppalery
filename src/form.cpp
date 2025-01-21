@@ -35,7 +35,7 @@ Form::~Form() {
 void Form::resize() {
     erase();
     getmaxyx(stdscr, maxRows, maxCols);
-    mainWin.resize(maxRows - BOTTOM_OFFSET, maxCols - 1); 
+    mainWin.resize(maxRows - BOTTOM_OFFSET, maxCols - 1);
     commandWin->move(1, maxCols, maxRows - BOTTOM_OFFSET + 1, 1);
     previewWin.move(maxRows - BOTTOM_OFFSET - 2, maxCols / 2 - 1, 2, maxCols / 2);
     pager->setHeight(maxRows - BOTTOM_OFFSET - 2);

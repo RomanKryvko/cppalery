@@ -69,11 +69,9 @@ int DirectorySearcher::findString(const std::vector<const std::filesystem::direc
             if (inString(directoryEntries[i]->path().filename().string(), searchTerm))
                 foundEntries.push_back(i);
         }
-
-        return foundEntries.size();
     }
 
-    return -1;
+    return foundEntries.size();
 }
 
 void DirectorySearcher::clearSearchResults() {

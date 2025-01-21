@@ -11,17 +11,18 @@ static constexpr short QUIT_CHAR = 'Q';
 
 class Keybindings {
 public:
-    using KeySequence = std::vector<short>;
+    using Key = short;
+    using KeySequence = std::vector<Key>;
     using Action = std::function<void()>;
 
     Keybindings(const std::map<KeySequence, Action>& bindings);
 
     void addBinding(const KeySequence& sequence, Action action);
 
-    void handleKeyPress(char key);
+    void handleKeyPress(Key key);
 
 private:
     std::map<KeySequence, Action> bindings;
-    std::deque<char> currentKeys;
+    std::deque<Key> currentKeys;
     static constexpr size_t maxKeySequenceLength = 3;
 };
