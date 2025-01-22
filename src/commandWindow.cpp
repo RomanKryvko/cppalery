@@ -55,7 +55,7 @@ void CommandWindow::printHelp() {
         {std::string("ARROW DOWN").append(separator).append(std::string(1, static_cast<char>('j'))), "Move down"},
         {std::string("Enter | ARROW RIGHT").append(separator).append(std::string(1, static_cast<char>('l'))), "Move right"},
         {std::string(1, static_cast<char>('?')), "Display this help message"},
-        {std::string("Enter | ARROW RIGHT").append(separator).append(std::string(1, static_cast<char>('l'))), "Set background (fill)"},
+        {std::string("Enter | ARROW RIGHT").append(separator).append(std::string(1, static_cast<char>('l'))), "Set background (auto mode)"},
         {std::string(1, static_cast<char>('c')), "Set background (centre)"},
         {std::string(1, static_cast<char>('r')), "Set random background (fill)"},
         {std::string(1, static_cast<char>('/')), "Search for substring in filenames"},

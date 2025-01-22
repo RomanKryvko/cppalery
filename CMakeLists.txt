@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(cppalery VERSION 1.1.1)
+project(cppalery VERSION 1.2.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -23,8 +23,13 @@ set(CPPALERY_SOURCES
     "src/config.cpp"
 )
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(IMLIB2 REQUIRED IMPORTED_TARGET GLOBAL imlib2)
+
 set(CPPALERY_LIBRARIES
+    X11
     ncurses
+    PkgConfig::IMLIB2
 )
 
 configure_file(include/version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/version.h)
