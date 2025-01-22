@@ -1,4 +1,4 @@
-.TH CPPALERY 1 "2024 July" "CPPalery @cppalery_VERSION@"
+.TH CPPALERY 1 "@BUILD_DATE@" "CPPalery @cppalery_VERSION@"
 
 .SH NAME
 cppalery \- browse directories and set wallpapers from the terminal

@@ -34,14 +34,14 @@ The configuration file is located at $HOME/.config/cppalery/config. Comments sta
 | wallpaper_set_center      | "command"      | Command to set wallpaper with center option. |
 
 ## Installation
-Specify cmake options of your preference, such as
+Specify cmake source and build directory, as well as options of your preference, such as
 ```
+cmake -S . -B build/
 cmake -DCMAKE_INSTALL_PREFIX=/usr
-cmake -CMAKE_INSTALL_MANDIR=/usr/share/man
+cmake -DCMAKE_INSTALL_MANDIR=/usr/share/man
 ```
 Then you can build the program with cmake, for example
 ```
-cmake -S . -B build/
 cmake --build build/
 ```
 Finally, you can install the program to the previously specified directories

@@ -4,6 +4,9 @@ project(cppalery VERSION 1.2.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(BUILD_DATE)
+string(TIMESTAMP BUILD_DATE "%Y %B")
+
 add_executable(cppalery)
 
 set(CPPALERY_SOURCES
